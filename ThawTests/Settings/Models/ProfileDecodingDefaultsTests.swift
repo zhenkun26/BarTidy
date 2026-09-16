@@ -158,10 +158,11 @@ struct ProfileSnapshotLiveSettingsTests {
         try withScratchDefaults { suite in
             let settings = GeneralSettings()
             var snapshot = GeneralSettingsSnapshot.capture(from: settings)
-            // showOnHover's default is true in BarTidy, and the model only
-            // persists on change — apply a non-default value so the didSet
-            // write is observable in the scratch domain.
-            snapshot.showOnHover = false
+            // The model persists only on change, so apply a value that
+            // differs from the default for the didSet write to be
+            // observable in the scratch domain.
+            let appliedShowOnHover = !Defaults.DefaultValue.showOnHover
+            snapshot.showOnHover = appliedShowOnHover
             snapshot.rehideInterval = 77
             snapshot.rehideStrategyRawValue = RehideStrategy.focusedApp.rawValue
 
@@ -170,7 +171,7 @@ struct ProfileSnapshotLiveSettingsTests {
             // Applying is what a profile switch does, and the switch has to
             // outlive the launch: the models persist through `didSet`, so the
             // scratch domain is the observable side effect.
-            #expect(suite.object(forKey: Defaults.Key.showOnHover.rawValue) as? Bool == false)
+            #expect(suite.object(forKey: Defaults.Key.showOnHover.rawValue) as? Bool == appliedShowOnHover)
             #expect(suite.object(forKey: Defaults.Key.rehideInterval.rawValue) as? Double == 77)
             #expect(
                 suite.object(forKey: Defaults.Key.rehideStrategy.rawValue) as? Int
