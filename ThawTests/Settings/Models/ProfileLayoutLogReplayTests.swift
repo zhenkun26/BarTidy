@@ -237,11 +237,11 @@ struct ProfileLayoutLogReplayTests {
     @Test("The logged desiredVisible is used instead of inference")
     func loggedDesiredVisibleIsUsedInsteadOfInference() throws {
         let log = """
-        2026-05-30 09:00:00.000 [DEBUG] [MenuBarItemManager] applyProfileLayout: current visible section has 3 items: ["com.stonerl.Thaw:Thaw.ControlItem.Visible", "com.example.extra:Item-0", "com.rogueamoeba.soundsource:SSMainAppMenuIcon"]
+        2026-05-30 09:00:00.000 [DEBUG] [MenuBarItemManager] applyProfileLayout: current visible section has 3 items: ["dev.zhenkun.BarTidy:Thaw.ControlItem.Visible", "com.example.extra:Item-0", "com.rogueamoeba.soundsource:SSMainAppMenuIcon"]
         2026-05-30 09:00:00.001 [DEBUG] [MenuBarItemManager] applyProfileLayout: current hidden section has 0 items: []
         2026-05-30 09:00:00.002 [DEBUG] [MenuBarItemManager] applyProfileLayout: current always-hidden section has 0 items: []
         2026-05-30 09:00:00.003 [DEBUG] [MenuBarItemManager] Profile layout: planUnmanagedPlacement com.example.extra:Item-0 -> newItemDefault(section=hidden section)
-        2026-05-30 09:00:00.004 [DEBUG] [MenuBarItemManager] Profile layout Phase 1: ahCtrlUID=com.stonerl.Thaw:Thaw.ControlItem.AlwaysHidden, crossSectionMoves=0, totalSectionMismatch=0
+        2026-05-30 09:00:00.004 [DEBUG] [MenuBarItemManager] Profile layout Phase 1: ahCtrlUID=dev.zhenkun.BarTidy:Thaw.ControlItem.AlwaysHidden, crossSectionMoves=0, totalSectionMismatch=0
         2026-05-30 09:00:00.004 [DEBUG] [MenuBarItemManager] Profile layout Phase 1: desiredHidden=[]
         2026-05-30 09:00:00.004 [DEBUG] [MenuBarItemManager] Profile layout Phase 1: desiredAH=[]
         2026-05-30 09:00:00.004 [DEBUG] [MenuBarItemManager] Profile layout Phase 1: desiredVisible=["com.rogueamoeba.soundsource:SSMainAppMenuIcon"]

@@ -472,8 +472,13 @@ struct MenuBarItemValueTests {
 
             #expect(first.autoDetectedName == second.autoDetectedName)
             // These agents are named after their owning application; the
-            // window title never reaches the user-visible name.
-            #expect(first.autoDetectedName == sourceName)
+            // window title never reaches the user-visible name. Agent names
+            // then run the app's "strip Menu…, then Title-Case" pass, so a
+            // camel-cased source name renders spaced ("BarTidy" → "Bar Tidy").
+            let expected = sourceName
+                .replacing(/Menu.*/, with: "")
+                .replacing(/([a-z]{2})([A-Z])/) { $0.output.1 + " " + $0.output.2 }
+            #expect(first.autoDetectedName == expected)
             #expect(!first.autoDetectedName.isEmpty)
         }
 

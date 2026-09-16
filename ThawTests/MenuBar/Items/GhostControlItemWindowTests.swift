@@ -186,9 +186,9 @@ struct GhostControlItemWindowTests {
     /// window number that is none of ours.
     private var orphan: MenuBarItem {
         item(
-            tag: .appItem(bundleID: "com.stonerl.Thaw", title: "com.stonerl.Thaw"),
+            tag: .appItem(bundleID: "dev.zhenkun.BarTidy", title: "dev.zhenkun.BarTidy"),
             windowID: 639,
-            title: "com.stonerl.Thaw"
+            title: "dev.zhenkun.BarTidy"
         )
     }
 
@@ -228,9 +228,9 @@ struct GhostControlItemWindowTests {
     @Test("A control item of ours with a degraded title is kept")
     func orphanDetectionKeepsADegradedControlItem() {
         let degraded = item(
-            tag: .appItem(bundleID: "com.stonerl.Thaw", title: "com.stonerl.Thaw"),
+            tag: .appItem(bundleID: "dev.zhenkun.BarTidy", title: "dev.zhenkun.BarTidy"),
             windowID: 16233,
-            title: "com.stonerl.Thaw"
+            title: "dev.zhenkun.BarTidy"
         )
         let items = [
             degraded,

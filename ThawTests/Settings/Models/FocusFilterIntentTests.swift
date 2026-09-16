@@ -181,7 +181,7 @@ struct FocusFilterIntentTests {
         let description: IntentDescription = try #require(ThawFocusFilter.description)
         #expect(
             String(localized: description.descriptionText)
-                == String(localized: "Apply a Thaw menu bar profile when this Focus activates.")
+                == String(localized: "Apply a BarTidy menu bar profile when this Focus activates.")
         )
         let categoryName = try #require(description.categoryName)
         #expect(String(localized: categoryName) == String(localized: "Profiles"))
