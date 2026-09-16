@@ -1,262 +1,110 @@
-![Thaw](https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/light_header.svg#gh-light-mode-only)
-![Thaw](https://raw.githubusercontent.com/thaw-app/brand-assets/main/headers/dark_header.svg#gh-dark-mode-only)
+# BarTidy
 
-<!-- Badges: shieldcn: individuals + small related groups (light/dark) -->
-<p align="center">
-  <a href="https://discord.gg/KDfWjWDnR4"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/Discord-join.svg?variant=outline&amp;size=xs&amp;mode=dark&amp;font=geist&amp;logo=discord&amp;" /><img alt="Discord" src="https://www.shieldcn.dev/badge/Discord-join.svg?variant=outline&amp;size=xs&amp;mode=light&amp;font=geist&amp;logo=discord&amp;" /></picture></a>
-  <a href="https://sonarcloud.io/component_measures?id=thaw-app_Thaw&amp;metric=coverage"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/sonar/coverage/thaw-app_Thaw.svg?variant=outline&amp;size=xs&amp;mode=dark&amp;font=geist&amp;logo=sonarqubecloud" /><img alt="Sonar coverage" src="https://www.shieldcn.dev/sonar/coverage/thaw-app_Thaw.svg?variant=outline&amp;size=xs&amp;mode=light&amp;font=geist&amp;logo=sonarqubecloud" /></picture></a>
-  <a href="https://scorecard.dev/viewer/?uri=github.com/thaw-app/Thaw"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/scorecard/thaw-app/Thaw.svg?variant=outline&amp;size=xs&amp;mode=dark&amp;font=geist" /><img alt="OpenSSF Scorecard" src="https://www.shieldcn.dev/github/scorecard/thaw-app/Thaw.svg?variant=outline&amp;size=xs&amp;mode=light&amp;font=geist" /></picture></a>
-  <a href="https://www.bestpractices.dev/projects/13303"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/openssf/thaw-app/Thaw.svg?variant=outline&amp;size=xs&amp;mode=dark&amp;font=geist&amp;color=D4AF37" /><img alt="OpenSSF Best Practices" src="https://www.shieldcn.dev/github/openssf/thaw-app/Thaw.svg?variant=outline&amp;size=xs&amp;mode=light&amp;font=geist&amp;color=D4AF37" /></picture></a>
-  <a href="docs/VERIFYING_RELEASES.md"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/badge/SLSA-Build_L3.svg?variant=outline&amp;size=xs&amp;mode=dark&amp;font=geist&amp;logo=ri:GoPackage" /><img alt="SLSA 3" src="https://www.shieldcn.dev/badge/SLSA-3.svg?variant=outline&amp;size=xs&amp;mode=light&amp;font=geist&amp;logo=ri:GoPackage" /></picture></a>
-</p>
+仓库：<https://github.com/zhenkun26/BarTidy>
 
-<p align="center">
-  <b>The open source menu bar manager.</b>
-</p>
+macOS 菜单栏收纳盒。悬停展开，移开收回；没放进盒子的图标一直留在菜单栏。
 
-<p align="center">
-  <a href="https://github.com/thaw-app/Thaw/releases">Download</a> ·
-  <a href="#install">Install</a> ·
-  <a href="#features">Features</a> ·
-  <a href="#integrations">Integrations</a> ·
-  <a href=".github/CONTRIBUTING.md">Contributing</a>
-</p>
+这是基于开源项目 [Thaw](https://github.com/thaw-app/Thaw) 的二次开发，给自己用。Thaw 能力很全，但默认会把后台图标几乎全收进去，高频 App 每次都要点好几下。BarTidy 只改这一段工作流，其余仍走 Thaw。
 
-<div align="center">
-  <a href="https://trendshift.io/repositories/21173" target="_blank"><img src="https://trendshift.io/api/badge/repositories/21173" alt="thaw-app/Thaw | Trendshift" style="width: 150px; height: 33px;" width="150" height="33" /></a>
-  <a href="https://www.producthunt.com/products/thaw-2?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-thaw-3" target="_blank" rel="noopener noreferrer"><img alt="Thaw | Product Hunt" width="150" height="32" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1239794&amp;theme=light&amp;t=1788423441056"></a>
-</div>
+> 自用项目。会不定期把 Thaw 的上游更新合进来，但**不太会处理 Issue / PR**。有问题更适合去 [Thaw](https://github.com/thaw-app/Thaw/issues) 看上游是否已经修了。
 
-<p align="center">
-  <a href="https://github.com/user-attachments/assets/9584065d-f840-4545-9a42-cfc5534b5ac3"><img alt="Thaw overview" src="https://github.com/user-attachments/assets/9584065d-f840-4545-9a42-cfc5534b5ac3" width="800" /></a>
-</p>
+## 许可证
 
-## Features
+**GNU GPLv3**，见 [LICENSE](LICENSE)。
 
-- Declutter your menu bar by hiding the icons you don't need, with an always-hidden section for the rest
-- Reveal items by hovering, clicking, scrolling, swiping, or pressing a hotkey
-- Search and jump to any menu bar item from the keyboard
-- Triggers that reveal an item when a condition is met, from battery level to the active Focus, the Wi-Fi network, or a script's exit code
-- Switch layouts by context: bind a profile to a display, a Space, or a Focus filter
-- Zen mode: one action conceals every section and locks the reveal gestures, then puts it all back. It can engage on its own while you present or share your screen
-- Style the bar with tint, gradient, shadow, border, and custom shapes, per light/dark mode and per Space
-- Built for modern macOS: supports macOS 26 and 27, including notch-friendly layouts via the Thaw Bar
-- Light on your Mac, with a small and steady memory footprint
-- Multilingual: available in 20 languages
+Thaw（以及它的上游 [Ice](https://github.com/jordanbaird/Ice)）使用 GPL-3.0。衍生作品必须继续 GPL，**不能改成 MIT**。如果只想用 MIT 的菜单栏工具，请看别的项目，不要把这份代码按 MIT 再分发。
 
-<details>
-<summary><b>Full feature list</b>: 40+ more, including groups, spacers, profiles, triggers, and hotkeys</summary>
+想支持原作者，请给 [Thaw](https://github.com/thaw-app/Thaw) 和 [Ice](https://github.com/jordanbaird/Ice) star，或通过 Thaw 的 [GitHub Sponsors](https://github.com/sponsors/stonerl) 赞助。
 
-### Menu bar item management
+## 和 Thaw 不一样的地方
 
-- Hide menu bar items
-- "Always-hidden" menu bar section
-- Show hidden menu bar items when hovering over the menu bar
-- Show hidden menu bar items when an empty area in the menu bar is clicked
-- Show hidden menu bar items by scrolling or swiping in the menu bar
-- Automatically rehide menu bar items
-- Hide application menus when they overlap with shown menu bar items
-- Drag and drop interface to arrange individual menu bar items
-- Groups that keep related items together, so they move and hide as one unit even across sections
-- Spacer items of your own, with adjustable width and colour
-- Activate an item straight from the layout editor
-- Surface a hidden item when its icon starts blinking for attention
-- Display hidden menu bar items in a separate bar (e.g. for MacBooks with the notch)
-- Search menu bar items
-- Menu bar item spacing
-- Draw items as their owning app's icon instead of a live capture
+BarTidy 没有重写 Thaw 的布局引擎。改的是默认策略和收纳盒交互。
 
-### Menu bar appearance
+### 1. 收纳是自己选的，不是默认全收
 
-- Menu bar tint (solid and gradient)
-- Adaptive tint sampled from the wallpaper, either as one average colour or as a gradient built from its two most dominant colours
-- Wallpaper changes re-tint the bar right away
-- Menu bar shadow
-- Menu bar border
-- Custom menu bar shapes (rounded, split, and notch-aware)
-- Remove background behind menu bar (macOS setting)
-- Different settings for light/dark mode
-- Per-Space appearance overrides
-- A separate shape, tint, and border for the Thaw Bar, instead of inheriting the menu bar's
+| | Thaw | BarTidy |
+|---|---|---|
+| 新出现的菜单栏图标 | 默认进 Hidden | 默认留在 Visible（常驻区） |
+| 刘海屏 overflow | 默认开启：空间不够就把常驻区图标再塞进 Hidden | 默认关闭：没被你收纳的图标不会被自动挤走 |
+| 常驻区个数 | 容易被 overflow / 新图标规则掏空 | 不限个数，等于「你没拖进盒子的那些」 |
 
-### Profiles
+要收某个后台：打开 **Settings → Menu Bar Layout**，把它拖进 Hidden。留在 Visible 的就是常驻，点一下就能用。
 
-- Save the whole configuration as a profile and switch between profiles instantly
-- Bind a profile to a display, to a Space, or to a Focus filter
-- Import and export profiles for backup or sharing
-- Pre and post apply script hooks, globally or per profile
+### 2. 收纳盒：悬停展开，移开收回
 
-### Triggers
+Thaw 的「Show on hover」默认关，打开后也是悬停**菜单栏空白处**才展开，而且走 Thaw Bar 时要等大约 15 秒才收回。
 
-Reveal an item when a condition is met, or hide it instead. Battery and power conditions are always available. Every other condition ships switched off and is enabled one at a time from Developer settings, and some are still marked Experimental.
+BarTidy：
 
-- Frontmost app, app running
-- Network connectivity, VPN, Wi-Fi network, Bluetooth device, audio output device
-- External display, time schedule, location
-- Focus / Do Not Disturb, Energy Mode, thermal pressure
-- Camera or microphone in use, script result
-- A watched icon changing, or blinking for attention
-- Conditions combined with AND / OR, plus an option to invert the action
+- 默认打开悬停展开，并默认用 Thaw Bar（图标下方那一条）当收纳盒
+- 悬停的是菜单栏上的 **BarTidy 图标**，不是空白区域
+- 鼠标还在图标或弹出条上就保持展开
+- 移开之后按悬停延迟（默认约 0.2 秒）收回，而不是 15 秒
+- 点图标仍然可以手动开关
 
-### Hotkeys
+高频图标放常驻区（一次点击）。偶尔才用的放盒子里（悬停再点）。
 
-- Toggle individual menu bar sections
-- Show the search panel
-- Enable/disable the Thaw Bar
-- Show/hide section divider icons
-- Toggle application menus
-- Toggle automatic rehiding
-- Toggle zen mode
-- Open a specific menu bar item's menu
-- Switch between profiles
+### 3. 应用身份
 
-### Settings and maintenance
+| | Thaw | BarTidy |
+|---|---|---|
+| 显示名 | Thaw | BarTidy |
+| Bundle ID | `com.stonerl.Thaw` | `dev.zhenkun.BarTidy` |
+| 设置 / 布局 | Thaw 自己的 defaults | 独立 defaults，不和官方 Thaw 抢同一套布局 |
+| Sparkle 更新 | 官方 appcast | 已关掉自动检查，避免把官方 Thaw 更新装到这个 fork 上 |
+| URI | `thaw://…` | `thaw://…` 和 `bartidy://…` 都能用 |
 
-- Simple Mode, which replaces the sidebar with one curated page and keeps every other pane's configuration intact
-- One per-display section driven by a picker, rather than a repeated block per display
-- A Tools pane for diagnostic logging, onboarding replay, per-app language override, cache clearing, and resets for settings, Control Center, the layout, and permissions
+Swift 模块名仍是 `Thaw`，源码目录也还叫 `Thaw/`，方便跟上游 diff / rebase。
 
-</details>
+### 没改的
 
-<details>
-<summary><b>Screenshots</b></summary>
+- 三区模型（Visible / Hidden / Always Hidden）、拖拽排版、搜索、快捷键、Profile、Triggers、外观、Zen mode
+- Accessibility / Screen Recording 权限模型
+- 嵌入的 XPC 服务名（仍是 `com.stonerl.Thaw.MenuBarItemService` 等）
+- GPL-3.0 和 Ice / Thaw 的版权声明
 
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <a href="https://github.com/user-attachments/assets/f2f6b9a6-55c5-40b3-910f-b27b114577dd"><img alt="Item layout" src="https://github.com/user-attachments/assets/f2f6b9a6-55c5-40b3-910f-b27b114577dd" width="400" /></a><br />
-      <sub><b>Item layout</b></sub>
-    </td>
-    <td align="center" width="50%">
-      <a href="https://github.com/user-attachments/assets/c6ac6364-30f8-4c92-8f6f-9efe15f99573"><img alt="Show hidden menu bar items below the menu bar" src="https://github.com/user-attachments/assets/c6ac6364-30f8-4c92-8f6f-9efe15f99573" width="400" /></a><br />
-      <sub><b>Show hidden items below the menu bar</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <a href="https://github.com/user-attachments/assets/54273d41-fcf3-4c9a-834b-e62a162a6b0c"><img alt="Drag-and-drop interface to arrange menu bar items" src="https://github.com/user-attachments/assets/54273d41-fcf3-4c9a-834b-e62a162a6b0c" width="400" /></a><br />
-      <sub><b>Drag-and-drop arrangement</b></sub>
-    </td>
-    <td align="center" width="50%">
-      <a href="https://github.com/user-attachments/assets/d95302df-26b0-4608-896e-4966c822fb5e"><img alt="Customize the menu bar's appearance" src="https://github.com/user-attachments/assets/d95302df-26b0-4608-896e-4966c822fb5e" width="400" /></a><br />
-      <sub><b>Customize the appearance</b></sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center" width="50%">
-      <a href="https://github.com/user-attachments/assets/ebafc745-7220-46c9-9297-f7a00ef6c15d"><img alt="Menu bar item search" src="https://github.com/user-attachments/assets/ebafc745-7220-46c9-9297-f7a00ef6c15d" width="400" /></a><br />
-      <sub><b>Menu bar item search</b></sub>
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
+## 使用
 
-</details>
+1. 先退出已经在跑的官方 **Thaw**，不要两个一起管菜单栏。
+2. 用 Xcode 打开本仓库，scheme 选 `Thaw`（产物是 `BarTidy.app`），运行。
+3. 第一次启动会走 Thaw 的权限引导，需要辅助功能权限才能移动图标。
+4. 在 **Menu Bar Layout** 里只把要收的图标拖进 Hidden。
+5. 鼠标悬停菜单栏上的 BarTidy 图标，盒子展开；移开自动收回。
 
-## Transparency
+系统要求与 Thaw 相同：macOS 26+。
 
-- Free, and free to keep. No purchase, no subscription, and no upgrade fee when macOS ships a new version.
-- Open source, GPL-3.0. Read the code, build it yourself, fork it.
-- No tracking, no account. No analytics, no telemetry, no sign-up.
-- Screen Recording is optional. Hiding, revealing, and rearranging items all work without it, and any item Thaw cannot capture is drawn as its app's icon instead. Grant it if you want live item previews and wallpaper-derived tinting.
-- Signed and notarized by Apple, with verifiable releases, the OpenSSF Best Practices Gold badge, and an OpenSSF Scorecard for supply-chain posture.
+## 用 Xcode 打开并运行
 
-## Integrations
+1. 打开 **Xcode**。欢迎页选 **Open Existing Project…**（不要 Create New Project）。
+2. 选中本仓库里的 `Thaw.xcodeproj`，打开。路径一般是 `~/GitHub/BarTidy/Thaw.xcodeproj`。
+3. 窗口顶部中间的 scheme 选 **Thaw**，右边设备选 **My Mac**。
+4. 先退出已经在跑的官方 Thaw。
+5. 点左上角 ▶，或按 `⌘R`。第一次会编译一两分钟，然后菜单栏出现 BarTidy 图标。
+6. 系统弹出辅助功能权限时，打开 **系统设置 → 隐私与安全性 → 辅助功能**，勾选 BarTidy。
 
-<a href="https://www.raycast.com/diazdesandi/thaw"><img alt="Works with Raycast" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-raycast.svg" height="28" /></a>
-<a href="https://getdroppy.app/"><img alt="Works with Droppy" src="https://raw.githubusercontent.com/thaw-app/brand-assets/main/badges/works-with-droppy.svg" height="28" /></a>
+产物是 `BarTidy.app`。以后要再打开：Xcode 欢迎页会列出这个项目，或用 Finder 双击 `Thaw.xcodeproj`。
 
-Every core action is a `thaw://` deep link, so Thaw plugs into the launcher you already use.
+## 跟着 Thaw 更新
 
-- [Raycast](https://www.raycast.com/diazdesandi/thaw): official extension. Toggle sections, open search, and change settings without leaving Raycast.
-- [Droppy](https://getdroppy.app/): pair Thaw with Droppy's shelf and extras for a full menu bar suite.
-- Anything else: Alfred, Shortcuts, Keyboard Maestro, BetterTouchTool, or a shell script.
+上游：<https://github.com/thaw-app/Thaw>，默认跟 `development`。
+
+合入时优先保留 BarTidy 这几处，不要被上游默认值盖回去：
+
+- `Thaw/Utilities/Defaults.swift`：`newItemsSection`、`showOnHover`、`useIceBar`、`enableMenuBarItemOverflow`、`globalDisplayConfiguration`
+- `Thaw/Events/HIDEventManager.swift`：悬停收纳盒 / 移开收回
+- 本 README、显示名、`dev.zhenkun.BarTidy` bundle ID、关掉的 Sparkle 检查
+
+冲突时以「opt-in 收纳 + 悬停盒子」为准。
+
+## 构建
 
 ```sh
-open "thaw://toggle-hidden"
-open "thaw://search"
-open "thaw://open-settings"
+xcodebuild -scheme Thaw -configuration Debug -destination 'platform=macOS' build
 ```
 
-Full reference, including reading and writing settings: [docs/URI_SCHEMES.md](docs/URI_SCHEMES.md).
+本地调试已是 ad-hoc 签名。正式分发需要你自己的开发者账号和公证；本仓库不为这个做发布流水线。
 
-## Install
+## 致谢
 
-```sh
-brew install thaw        # stable
-brew install thaw@beta   # beta, or stable if it is newer
-```
-
-Or grab the `.dmg` from the [latest release](https://github.com/thaw-app/Thaw/releases/latest) and drag Thaw to Applications.
-
-Needs macOS 26+. Thaw asks for Accessibility on first launch to move menu bar items; Screen Recording is optional. Stuck? See [Frequent issues](FREQUENT_ISSUES.md).
-
-## Languages
-
-Thaw is available in 20 languages, thanks to translators around the world.
-
-<table frame="void" rules="none">
-  <tr>
-    <td>🇮🇩 Bahasa Indonesia</td>
-    <td>🇨🇿 Čeština</td>
-    <td>🇩🇪 🇦🇹 Deutsch</td>
-    <td>🇬🇧 🇺🇸 English</td>
-  </tr>
-  <tr>
-    <td>🇪🇸 🇲🇽 Español</td>
-    <td>🇫🇷 Français</td>
-    <td>🇮🇹 Italiano</td>
-    <td>🇭🇺 Magyar</td>
-  </tr>
-  <tr>
-    <td>🇳🇱 🇧🇪 Nederlands</td>
-    <td>🇵🇱 Polski</td>
-    <td>🇧🇷 Português (Brasil)</td>
-    <td>🇹🇷 Türkçe</td>
-  </tr>
-  <tr>
-    <td>🇷🇺 Русский</td>
-    <td>🇺🇦 Українська<sup>*</sup></td>
-    <td>🇹🇭 ภาษาไทย</td>
-    <td>🇻🇳 Tiếng Việt<sup>*</sup></td>
-  </tr>
-  <tr>
-    <td>🇯🇵 日本語</td>
-    <td>🇰🇷 한국어</td>
-    <td>🇨🇳 简体中文</td>
-    <td>🇹🇼 正體中文</td>
-  </tr>
-</table>
-
-Missing yours, or spotted something off? [Translate Thaw on Crowdin](https://crowdin.com/project/thaw). You can request new languages there too. Everyone who has translated Thaw is named in [Credits](CREDITS.md).
-
-<sub>\* Currently only in the <code>development</code> branch.</sub>
-
-## Contributors
-
-This project exists thanks to the people who contribute code and documentation. Translations happen on Crowdin rather than in git, so translators are credited separately in [Credits](CREDITS.md).
-
-Want to contribute? Start with [Ways to contribute](https://github.com/thaw-app/Thaw/issues/316). Pull requests are welcome against the `development` branch (see [Contributing](.github/CONTRIBUTING.md)).
-
-Open to partnerships, integrations, and sponsorships. [Get in touch](https://github.com/sponsors/stonerl).
-
-<p align="center">
-  <a href="https://github.com/thaw-app/Thaw/graphs/contributors"><img alt="contributors" src="https://shieldcn.dev/contributors/thaw-app/Thaw.svg?title=false&amp;size=40&amp;names=true&amp;titleAlign=center&amp;limit=100&amp;mode=light&amp;font=space-grotesk&amp;watermark=true&amp;border=false" /></a>
-</p>
-
-## Project documentation
-
-- [Contributing](.github/CONTRIBUTING.md)
-- [Credits](CREDITS.md)
-- [Governance](.github/GOVERNANCE.md)
-- [Security policy](.github/SECURITY.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Assurance case](docs/ASSURANCE_CASE.md)
-- [Verifying releases](docs/VERIFYING_RELEASES.md)
-- [Release and update distribution](docs/RELEASES.md)
-- [URI schemes](docs/URI_SCHEMES.md)
-
-## License
-
-Thaw is available under the [GPL-3.0 license](LICENSE).
+- [Jordan Baird / Ice](https://github.com/jordanbaird/Ice)
+- [Toni Förster / Thaw](https://github.com/thaw-app/Thaw)

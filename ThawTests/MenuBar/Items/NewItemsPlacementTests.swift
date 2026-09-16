@@ -187,8 +187,9 @@ struct NewItemsPlacementTests {
     func defaultValueSectionKey() {
         let defaultValue = MenuBarItemManager.NewItemsPlacement.defaultValue
 
-        // Default section should be "hidden" per Defaults.DefaultValue.newItemsSection
+        // Default section should match Defaults.DefaultValue.newItemsSection
         #expect(defaultValue.sectionKey == Defaults.DefaultValue.newItemsSection)
+        #expect(defaultValue.sectionKey == "visible")
     }
 
     // MARK: - Equality

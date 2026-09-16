@@ -62,7 +62,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7166832A2A767E6A006ABF84 /* Thaw.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Thaw.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7166832A2A767E6A006ABF84 /* BarTidy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BarTidy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7188A6832E27F9ED008F131D /* MenuBarItemService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = MenuBarItemService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4PT00012F3A100000000001 /* MenuBarCaptureService.xpc */ = {isa = PBXFileReference; explicitFileType = "wrapper.xpc-service"; includeInIndex = 0; path = MenuBarCaptureService.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
 		E2TESTS0012F2C000000001 /* ThawTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThawTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -181,7 +181,7 @@
 		7166832B2A767E6A006ABF84 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7166832A2A767E6A006ABF84 /* Thaw.app */,
+				7166832A2A767E6A006ABF84 /* BarTidy.app */,
 				7188A6832E27F9ED008F131D /* MenuBarItemService.xpc */,
 				C4PT00012F3A100000000001 /* MenuBarCaptureService.xpc */,
 				E2TESTS0012F2C000000001 /* ThawTests.xctest */,
@@ -226,7 +226,7 @@
 				2C7E9A45F08D3B61C5E8A214 /* SystemPackage */,
 			);
 			productName = Ice;
-			productReference = 7166832A2A767E6A006ABF84 /* Thaw.app */;
+			productReference = 7166832A2A767E6A006ABF84 /* BarTidy.app */;
 			productType = "com.apple.product-type.application";
 		};
 		7188A6822E27F9ED008F131D /* MenuBarItemService */ = {
@@ -711,17 +711,21 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Thaw/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BarTidy;
+				INFOPLIST_KEY_CFBundleName = BarTidy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Toni Förster et al.\nCopyright © 2023–2025 Jordan Baird (Ice)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright \U00a9 2026 Zhenkun (BarTidy)\nCopyright \U00a9 2026 Toni F\U00f6rster et al. (Thaw)\nCopyright \U00a9 2023\U20132025 Jordan Baird (Ice)";
+				INFOPLIST_KEY_SUEnableAutomaticChecks = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = "2.1.0-beta.3";
-				PRODUCT_BUNDLE_IDENTIFIER = com.stonerl.Thaw;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.zhenkun.BarTidy;
+				PRODUCT_MODULE_NAME = Thaw;
+				PRODUCT_NAME = BarTidy;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -752,17 +756,21 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Thaw/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BarTidy;
+				INFOPLIST_KEY_CFBundleName = BarTidy;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_LSUIElement = YES;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 Toni Förster et al.\nCopyright © 2023–2025 Jordan Baird (Ice)";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright \U00a9 2026 Zhenkun (BarTidy)\nCopyright \U00a9 2026 Toni F\U00f6rster et al. (Thaw)\nCopyright \U00a9 2023\U20132025 Jordan Baird (Ice)";
+				INFOPLIST_KEY_SUEnableAutomaticChecks = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = "2.1.0-beta.3";
-				PRODUCT_BUNDLE_IDENTIFIER = com.stonerl.Thaw;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.zhenkun.BarTidy;
+				PRODUCT_MODULE_NAME = Thaw;
+				PRODUCT_NAME = BarTidy;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -920,7 +928,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.2;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Thaw.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Thaw";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BarTidy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BarTidy";
 			};
 			name = Debug;
 		};
@@ -943,7 +951,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 6.2;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Thaw.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Thaw";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BarTidy.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/BarTidy";
 			};
 			name = Release;
 		};

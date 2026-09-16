@@ -1404,6 +1404,36 @@ extension HIDEventManager {
 
     // MARK: Handle Show On Hover
 
+    /// Whether a hover-reveal should stay open for this cursor position.
+    ///
+    /// The storage-box icon and the Thaw Bar itself keep the panel open.
+    /// When hidden items expand inline in the menu bar, the rest of the bar
+    /// also counts so the user can reach a revealed item. When the Thaw Bar
+    /// is in use, leaving the box and the bar collapses the reveal.
+    static nonisolated func shouldKeepHoverReveal(
+        overStorageBox: Bool,
+        overIceBar: Bool,
+        overMenuBar: Bool,
+        usesIceBar: Bool
+    ) -> Bool {
+        if overStorageBox || overIceBar {
+            return true
+        }
+        if usesIceBar {
+            return false
+        }
+        return overMenuBar
+    }
+
+    private func shouldKeepHoverReveal(appState: AppState, screen: NSScreen) -> Bool {
+        Self.shouldKeepHoverReveal(
+            overStorageBox: isMouseInsideIceIcon(appState: appState),
+            overIceBar: isMouseInsideIceBar(appState: appState),
+            overMenuBar: isMouseInsideMenuBar(appState: appState, screen: screen),
+            usesIceBar: appState.settings.displaySettings.useIceBar(for: screen.displayID)
+        )
+    }
+
     private func handleShowOnHover(appState: AppState, screen: NSScreen) {
         // Make sure the "ShowOnHover" feature is enabled and allowed.
         guard
@@ -1425,13 +1455,7 @@ extension HIDEventManager {
         let delay = appState.settings.advanced.showOnHoverDelay
 
         if hiddenSection.isHidden {
-            guard
-                isMouseInsideEmptyMenuBarSpace(
-                    appState: appState,
-                    screen: screen
-                ),
-                !isCursorOverForeignWidgetUIElement()
-            else {
+            guard isMouseInsideIceIcon(appState: appState) else {
                 if pendingHoverAction == .show {
                     hoverTask?.cancel()
                     hoverTask = nil
@@ -1458,23 +1482,17 @@ extension HIDEventManager {
                     }
                 }
                 try await Task.sleep(for: .seconds(delay))
-                // Make sure the manager is still enabled and the mouse is still inside.
+                // Make sure the manager is still enabled and the mouse is still on the box.
                 guard
                     isEnabled,
-                    isMouseInsideEmptyMenuBarSpace(
-                        appState: appState,
-                        screen: screen
-                    )
+                    isMouseInsideIceIcon(appState: appState)
                 else {
                     return
                 }
                 hiddenSection.show()
             }
         } else {
-            guard
-                !isMouseInsideMenuBar(appState: appState, screen: screen),
-                !isMouseInsideIceBar(appState: appState)
-            else {
+            guard !shouldKeepHoverReveal(appState: appState, screen: screen) else {
                 if pendingHoverAction == .hide {
                     hoverTask?.cancel()
                     hoverTask = nil
@@ -1490,19 +1508,10 @@ extension HIDEventManager {
             pendingHoverAction = .hide
             let taskToken = UUID()
             hoverTaskToken = taskToken
-            // When the Thaw Bar (Ice Bar) is the active presentation, the
-            // rehide interval — not the hover delay — should govern how
-            // long the panel stays open after the cursor leaves. The start
-            // rehide checks already use rehideInterval; a 0.2 s hover
-            // delay always wins that race and snaps the panel shut before
-            // the user can click an icon.
-            let hideDelay: TimeInterval = if let activeDisplay = appState.hidEventManager.bestScreen(appState: appState),
-                                             appState.settings.displaySettings.useIceBar(for: activeDisplay.displayID)
-            {
-                appState.settings.general.rehideInterval
-            } else {
-                delay
-            }
+            // Collapse shortly after the cursor leaves the storage box and
+            // the Thaw Bar. The hover delay (not the 15s rehide interval)
+            // is the right window: long enough to travel from the icon into
+            // the bar, short enough to feel like mouse-leave.
             hoverTask = Task {
                 defer {
                     if hoverTaskToken == taskToken {
@@ -1513,11 +1522,10 @@ extension HIDEventManager {
                         }
                     }
                 }
-                try await Task.sleep(for: .seconds(hideDelay))
+                try await Task.sleep(for: .seconds(delay))
                 guard
                     isEnabled,
-                    !isMouseInsideMenuBar(appState: appState, screen: screen),
-                    !isMouseInsideIceBar(appState: appState)
+                    !shouldKeepHoverReveal(appState: appState, screen: screen)
                 else {
                     return
                 }

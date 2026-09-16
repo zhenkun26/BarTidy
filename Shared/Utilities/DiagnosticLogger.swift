@@ -13,7 +13,7 @@ import OSLog
 /// when diagnostic logging is enabled. This allows users to capture detailed
 /// debug logs for troubleshooting without requiring a debug build.
 ///
-/// Log files are written to `~/Library/Logs/Thaw/`.
+/// Log files are written to `~/Library/Logs/BarTidy/`.
 final nonisolated class DiagnosticLogger: @unchecked Sendable {
     /// The shared diagnostic logger instance.
     static let shared = DiagnosticLogger()
@@ -58,7 +58,7 @@ final nonisolated class DiagnosticLogger: @unchecked Sendable {
         return home
             .appendingPathComponent("Library", isDirectory: true)
             .appendingPathComponent("Logs", isDirectory: true)
-            .appendingPathComponent("Thaw", isDirectory: true)
+            .appendingPathComponent("BarTidy", isDirectory: true)
     }
 
     /// Returns whether any log files exist in the log directory.

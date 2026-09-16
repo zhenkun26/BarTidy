@@ -113,10 +113,10 @@ struct DisplaySettingsManagerLookupTests {
             }
         }
 
-        /// A template that cannot be decoded leaves the hardcoded default in
+        /// A template that cannot be decoded leaves the shipped default in
         /// place. The per-display table is seeded first so the assertion is
         /// about the template rather than about the loader having run at all.
-        @Test("An unreadable global template falls back to the hardcoded default")
+        @Test("An unreadable global template falls back to the shipped default")
         func unreadableGlobalTemplateFallsBackToTheDefault() throws {
             try withScratchDefaults { _ in
                 let stored = DisplayIceBarConfiguration.defaultConfiguration.withGridColumns(7)
@@ -127,7 +127,7 @@ struct DisplaySettingsManagerLookupTests {
                 let manager = DisplaySettingsManager()
 
                 #expect(manager.configurations[storedOnlyUUID]?.gridColumns == 7, "the loader must have run")
-                #expect(manager.globalConfiguration == .defaultConfiguration)
+                #expect(manager.globalConfiguration == Defaults.DefaultValue.globalDisplayConfiguration)
             }
         }
 

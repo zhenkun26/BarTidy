@@ -45,7 +45,7 @@ final class DisplaySettingsManager {
     /// newly connected displays. Persisted independently from
     /// configurations so the template survives display disconnects, and
     /// captured by every Profile so each profile carries its own global.
-    var globalConfiguration: DisplayIceBarConfiguration = .defaultConfiguration {
+    var globalConfiguration: DisplayIceBarConfiguration = Defaults.DefaultValue.globalDisplayConfiguration {
         didSet {
             guard oldValue != globalConfiguration else { return }
             do {

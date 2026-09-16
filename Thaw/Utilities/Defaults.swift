@@ -160,13 +160,13 @@ nonisolated extension Defaults {
         static let showIceIcon = true
         static let iceIcon = ControlItemImageSet.defaultIceIcon
         static let customIceIconIsTemplate = false
-        static let useIceBar = false
+        static let useIceBar = true
         static let useIceBarOnlyOnNotchedDisplay = false
         static let iceBarLocation: IceBarLocation = .dynamic
         static let iceBarLocationOnHotkey = false
         static let showOnClick = true
         static let showOnDoubleClick = true
-        static let showOnHover = false
+        static let showOnHover = true
         static let showOnScroll = true
         static let autoRehide = true
         static let simpleMode = false
@@ -179,7 +179,7 @@ nonisolated extension Defaults {
 
         static let enableAlwaysHiddenSection = false
         static let showAllSectionsOnUserDrag = true
-        static let newItemsSection = "hidden"
+        static let newItemsSection = "visible"
         static let newItemsPlacementData: Data? = nil
         static let sectionDividerStyle: SectionDividerStyle = .noDivider
         static let hideApplicationMenus = true
@@ -199,7 +199,7 @@ nonisolated extension Defaults {
         static let diagnosticLogRotationInterval: LogRotationInterval = .off
         static let useOptionClickToShowAlwaysHiddenSection = false
         static let useDoubleClickToShowAlwaysHiddenSection = false
-        static let enableMenuBarItemOverflow = true
+        static let enableMenuBarItemOverflow = false
         static let useThawBarOnNotchOverflow = true
         static let useAXClickDelivery = true
 
@@ -231,7 +231,8 @@ nonisolated extension Defaults {
         // MARK: Display Settings
 
         static let displayIceBarConfigurations: [String: DisplayIceBarConfiguration] = [:]
-        static let globalDisplayConfiguration: DisplayIceBarConfiguration = .defaultConfiguration
+        static let globalDisplayConfiguration = DisplayIceBarConfiguration.defaultConfiguration
+            .withUseIceBar(true)
         static let confirmSpacingRelaunch = true
         static let unconfirmedSpacingProfileScope: SpacingProfileSaveScope = .activeProfile
         static let spacingApplyMode: SpacingApplyMode = .relaunchApps

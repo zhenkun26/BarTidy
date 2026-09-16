@@ -1042,7 +1042,7 @@ final class MenuBarItemManager {
         }
 
         let storedSection = Defaults.string(forKey: .newItemsSection) ?? Defaults.DefaultValue.newItemsSection
-        let resolvedSection = sectionName(for: storedSection) ?? .hidden
+        let resolvedSection = sectionName(for: storedSection) ?? .visible
         newItemsPlacement = NewItemsPlacement(
             sectionKey: sectionKey(for: resolvedSection),
             anchorIdentifier: nil,
@@ -1606,7 +1606,7 @@ final class MenuBarItemManager {
     /// Returns the effective section for newly detected menu bar items, falling back
     /// to hidden when the always-hidden section is currently disabled.
     var effectiveNewItemsSection: MenuBarSection.Name {
-        let preferredSection = sectionName(for: newItemsPlacement.sectionKey) ?? .hidden
+        let preferredSection = sectionName(for: newItemsPlacement.sectionKey) ?? .visible
         if preferredSection == .alwaysHidden, appState?.settings.advanced.enableAlwaysHiddenSection != true {
             return .hidden
         }
@@ -1808,7 +1808,7 @@ final class MenuBarItemManager {
     /// the clock-side edge of the section; the spot users reach first
     /// when they expand the hidden section.
     func applyNewItemsPlacement(_ placement: NewItemsPlacement) {
-        let preferredSection = sectionName(for: placement.sectionKey) ?? .hidden
+        let preferredSection = sectionName(for: placement.sectionKey) ?? .visible
         let alwaysHiddenDisabled = appState?.settings.advanced.enableAlwaysHiddenSection != true
         let clampedToHidden = preferredSection == .alwaysHidden && alwaysHiddenDisabled
         let resolvedSection: MenuBarSection.Name = clampedToHidden ? .hidden : preferredSection
@@ -1967,8 +1967,8 @@ final class MenuBarItemManager {
         loadSavedSectionOrder()
         loadNewItemsPlacementPreference()
         MenuBarItemManager.diagLog.debug("performSetup: loaded \(knownItemIdentifiers.count) known identifiers, \(pinnedHiddenBundleIDs.count) pinned hidden, \(pinnedAlwaysHiddenBundleIDs.count) pinned always-hidden, \(savedSectionOrder.values.map(\.count)) saved order entries")
-        // On first launch (no known identifiers), avoid auto-relocating the leftmost item
-        // so everything remains in the hidden section until the user interacts.
+        // On first launch (no known identifiers), skip auto-relocating the
+        // leftmost item so items stay where they are until the user stores them.
         suppressNextNewLeftmostItemRelocation = knownItemIdentifiers.isEmpty
         configureCancellables(with: appState)
         initialCacheTask?.cancel()

@@ -135,8 +135,8 @@ final class GeneralSettings {
     }
 
     /// A Boolean value that indicates whether the hidden section
-    /// should be shown when the mouse pointer hovers over an
-    /// empty area of the menu bar.
+    /// should be shown when the mouse pointer hovers over the
+    /// storage-box icon in the menu bar.
     var showOnHover = Defaults.DefaultValue.showOnHover {
         didSet {
             guard oldValue != showOnHover else { return }

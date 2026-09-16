@@ -420,11 +420,11 @@ struct DiagnosticLoggerFileTests {
 
     // MARK: Log directory
 
-    @Test("The log directory is Library/Logs/Thaw inside the user's home")
+    @Test("The log directory is Library/Logs/BarTidy inside the user's home")
     func logDirectoryIsUnderTheUserLibrary() {
         let directory = DiagnosticLogger.shared.logDirectory
 
-        #expect(directory.lastPathComponent == "Thaw")
+        #expect(directory.lastPathComponent == "BarTidy")
         #expect(directory.deletingLastPathComponent().lastPathComponent == "Logs")
         #expect(directory.path.hasPrefix(FileManager.default.homeDirectoryForCurrentUser.path))
     }
