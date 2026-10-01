@@ -29,6 +29,16 @@ Layout engine, search, hotkeys, profiles, triggers, and appearance are unchanged
 xcodebuild -scheme Thaw -configuration Debug -destination 'platform=macOS' build
 ```
 
+### Recovering permissions after a local rebuild
+
+Only Accessibility is required to continue. Screen Recording enables icon previews in the tray, color sampling, and visual search.
+
+The default local build uses ad-hoc signing. Its code identity changes when the app is rebuilt, so macOS can reject the new build even while an old BarTidy entry remains enabled in System Settings. Thaw's distributed builds use a certificate-based signing identity instead.
+
+Use **Show Current App in Finder** on the permissions screen to locate the running copy. In **System Settings → Privacy & Security**, remove the old BarTidy entry and add that current copy for Accessibility and, if desired, Screen Recording. Restart BarTidy if macOS asks, or use **Restart BarTidy**. The screen rechecks access when the app becomes active; **Check Again** also refreshes it immediately. Keep using the same installed copy until the next rebuild.
+
+Preserving authorization across rebuilds requires a consistent signing certificate and designated requirement. Keeping the same app name or bundle ID alone is insufficient.
+
 ## Tracking Thaw
 
 Upstream: [thaw-app/Thaw](https://github.com/thaw-app/Thaw) (`development`). Keep BarTidy defaults and hover behavior when merging:

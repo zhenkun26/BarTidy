@@ -20,26 +20,25 @@ nonisolated enum ScreenCapture {
 
     /// Returns a Boolean value that indicates whether the app has screen
     /// capture permissions.
-    static func checkPermissions() -> Bool {
-        let windowIDs = Bridging.getMenuBarWindowList(option: [.itemsOnly, .activeSpace])
-        diagLog.debug("checkPermissions: checking \(windowIDs.count) menu bar window(s) for title access")
-
-        for windowID in windowIDs {
-            guard
-                let window = WindowInfo(windowID: windowID),
-                window.owningApplication != .current // Skip windows we own.
-            else {
-                continue
-            }
-            let hasTitle = window.title != nil
-            diagLog.debug("checkPermissions: windowID=\(windowID) pid=\(window.ownerPID) owner=\"\(window.ownerName ?? "nil")\" title=\"\(window.title ?? "nil")\" → hasTitle=\(hasTitle)")
-            return hasTitle
+    static func checkPermissions(
+        preflight: () -> Bool = { CGPreflightScreenCaptureAccess() },
+        windows: () -> [WindowInfo] = {
+            Bridging.getMenuBarWindowList(option: [.itemsOnly, .activeSpace])
+                .compactMap { WindowInfo(windowID: $0) }
         }
-        // CGPreflightScreenCaptureAccess() only returns an initial value,
-        // but we can use it as a fallback.
-        let preflightResult = CGPreflightScreenCaptureAccess()
-        diagLog.debug("checkPermissions: no suitable non-owned windows found, fallback CGPreflightScreenCaptureAccess() → \(preflightResult)")
-        return preflightResult
+    ) -> Bool {
+        // A positive system check must not be overridden by an untitled item.
+        if preflight() {
+            return true
+        }
+        // Preflight can remain false until relaunch after a grant. Window
+        // titles provide a live fallback, but some items never have a title.
+        // Check every foreign window rather than returning on the first one.
+        let granted = windows().contains {
+            $0.ownerPID != ProcessInfo.processInfo.processIdentifier && $0.title != nil
+        }
+        diagLog.debug("checkPermissions: live window title access = \(granted)")
+        return granted
     }
 
     /// Returns a Boolean value that indicates whether the app has screen

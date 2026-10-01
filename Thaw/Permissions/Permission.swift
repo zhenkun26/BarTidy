@@ -20,9 +20,7 @@ class Permission: Identifiable {
     /// A Boolean value that indicates whether the app has this permission.
     private(set) var hasPermission = false {
         didSet {
-            // `configureCancellables` re-assigns this every 3 seconds while
-            // the permission is still missing, so fire only on an actual
-            // transition rather than on every poll.
+            // Notify owners only when the effective permission changes.
             guard oldValue != hasPermission else { return }
             onChange?()
         }
@@ -94,29 +92,27 @@ class Permission: Identifiable {
         self.check = check
         self.request = request
         self.openSettings = openSettings
-        self.hasPermission = check()
-        configureCancellables()
+        startCheck()
     }
 
-    /// Sets up the internal observers for the permission.
-    ///
-    /// Polls ``check`` on a timer until the permission is granted, at which
-    /// point the timer cancels itself — there's no need to keep checking once
-    /// the app already has what it needs.
-    private func configureCancellables() {
-        timerCancellable = Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .default)
+    /// Rechecks the system's effective authorization without requesting access.
+    func refresh() {
+        hasPermission = check()
+        if hasPermission {
+            stopCheck()
+        }
+    }
+
+    /// Checks immediately, then polls until granted. Common run-loop modes
+    /// keep checks running while a menu or another UI interaction is active.
+    func startCheck() {
+        stopCheck()
+        refresh()
+        guard !hasPermission else { return }
+        timerCancellable = Timer.publish(every: 3, tolerance: 0.5, on: .main, in: .common)
             .autoconnect()
-            .merge(with: Just(.now))
             .sink { [weak self] _ in
-                guard let self else {
-                    return
-                }
-                let granted = check()
-                hasPermission = granted
-                if granted {
-                    timerCancellable?.cancel()
-                    timerCancellable = nil
-                }
+                self?.refresh()
             }
     }
 
@@ -124,8 +120,8 @@ class Permission: Identifiable {
     func performRequest() {
         // Setup stops background permission polling once the app is running.
         // Restart it for every explicit request so later grants are observed.
-        configureCancellables()
         request()
+        startCheck()
         if let settingsURL {
             _ = openSettings(settingsURL)
         }
@@ -186,7 +182,9 @@ final class ScreenRecordingPermission: Permission {
             isRequired: false,
             settingsURL: URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"),
             check: {
-                ScreenCapture.checkPermissions()
+                // Keep tray previews and layout views in sync with recovery;
+                // they also read this cache after onboarding completes.
+                ScreenCapture.cachedCheckPermissions(reset: true)
             },
             request: {
                 ScreenCapture.requestPermissions()
