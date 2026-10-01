@@ -146,7 +146,7 @@ final class AppState {
         Task {
             await MenuBarCaptureService.Connection.shared.start()
         }
-        diagLog.debug("setupTask: MenuBarCaptureService XPC start kicked off")
+        diagLog.debug("setupTask: optional offscreen capture backend start kicked off")
 
         appearanceManager.performSetup(with: self)
         hidEventManager.performSetup(with: self)

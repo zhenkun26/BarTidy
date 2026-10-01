@@ -154,6 +154,7 @@ nonisolated enum ScreenCapture {
         screenBounds: CGRect,
         displayID: CGDirectDisplayID
     ) async throws -> CGImage? {
+        guard CGPreflightScreenCaptureAccess() else { return nil }
         // Get shareable content (displays and windows)
         let content = try await getShareableContent()
 
@@ -280,6 +281,9 @@ nonisolated enum ScreenCapture {
     /// would therefore never fire, so there is none: the call simply runs to
     /// completion and its result is cached.
     private static func fetchShareableContentUncached() async throws -> ShareableContentSnapshot {
+        guard CGPreflightScreenCaptureAccess() else {
+            throw SCStreamError(.userDeclined)
+        }
         let content = try await SCShareableContent.current
         return ShareableContentSnapshot(content: content)
     }

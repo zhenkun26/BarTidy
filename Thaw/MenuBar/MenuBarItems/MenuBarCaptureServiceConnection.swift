@@ -20,6 +20,10 @@ extension MenuBarCaptureService {
         private let queue: DispatchQueue
         private let diagLog: DiagLog
         private let requestIDs = OSAllocatedUnfairLock(initialState: UInt64(0))
+        private let usesHelper = MenuBarCaptureService.usesCaptureHelper(
+            teamIdentifier: CodeSigningInfo.processTeamIdentifier
+        )
+        private let localCaptureLock = NSLock()
 
         /// Tracks what the current helper process has been told about
         /// diagnostic logging.
@@ -59,6 +63,10 @@ extension MenuBarCaptureService {
         }
 
         func start() async {
+            guard usesHelper else {
+                diagLog.notice("Offscreen capture uses the authorized app process (teamless local build)")
+                return
+            }
             await syncLogging()
             _ = await session.sendAsync(request: .start)
         }
@@ -78,6 +86,7 @@ extension MenuBarCaptureService {
         /// and the sender already running picks its work up with a file that
         /// is at least as new as the one that caller would have passed along.
         func syncLogging() async {
+            guard usesHelper else { return }
             // One sender at a time. Sends started from different threads reach
             // the helper in whatever order they hit the wire, so an older
             // configuration could otherwise land last and stick.
@@ -129,6 +138,7 @@ extension MenuBarCaptureService {
         }
 
         func recycle() async {
+            guard usesHelper else { return }
             _ = await session.sendAsync(request: .recycle)
             session.cancel(reason: "recycle")
         }
@@ -138,6 +148,15 @@ extension MenuBarCaptureService {
             scale: CGFloat,
             option: CGWindowImageOption
         ) async -> [Frame] {
+            // Hover and background refresh must never request authorization.
+            guard CGPreflightScreenCaptureAccess() else { return [] }
+            if !usesHelper {
+                return await captureLocally(
+                    windowIDs: windowIDs,
+                    scale: scale,
+                    option: option
+                )
+            }
             // The cheapest place to notice that the helper is out of date:
             // either the session was replaced since the last batch, so the
             // helper handling it has never been told which file to log to, or
@@ -165,10 +184,30 @@ extension MenuBarCaptureService {
             ) ?? []
         }
 
-        private func nextRequestID() -> UInt64 {
+        private nonisolated func nextRequestID() -> UInt64 {
             requestIDs.withLock { value in
                 value += 1
                 return value
+            }
+        }
+
+        @concurrent
+        private func captureLocally(
+            windowIDs: [CGWindowID],
+            scale: CGFloat,
+            option: CGWindowImageOption
+        ) async -> [Frame] {
+            localCaptureLock.withLock {
+                autoreleasepool {
+                    MenuBarCaptureService.captureFrames(
+                        CaptureBatchRequest(
+                            requestID: nextRequestID(),
+                            windowIDs: windowIDs,
+                            optionRawValue: option.rawValue,
+                            expectedScale: Double(scale)
+                        )
+                    )
+                }
             }
         }
 

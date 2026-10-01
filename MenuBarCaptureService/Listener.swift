@@ -109,88 +109,16 @@ final nonisolated class Listener: @unchecked Sendable {
     private func captureFrames(
         _ request: MenuBarCaptureService.CaptureBatchRequest
     ) -> [MenuBarCaptureService.Frame] {
-        let scale = CGFloat(request.expectedScale)
-        guard scale > 0, scale.isFinite else { return [] }
-
-        let allowed = Set(Bridging.getMenuBarWindowList(option: .itemsOnly))
-        let windowIDs = MenuBarCaptureService.validatedWindowIDs(request.windowIDs, allowed: allowed)
-        guard !windowIDs.isEmpty else { return [] }
-
-        var storage = [CGWindowID: CGRect]()
-        var orderedIDs = [CGWindowID]()
-        var boundsUnion = CGRect.null
-        for windowID in windowIDs {
-            guard let bounds = Bridging.getWindowBounds(for: windowID) else { continue }
-            guard Bridging.isValidCaptureBounds(bounds, scale: scale) else { continue }
-            storage[windowID] = bounds
-            orderedIDs.append(windowID)
-            boundsUnion = boundsUnion.union(bounds)
-        }
-        guard !orderedIDs.isEmpty,
-              Bridging.isValidCaptureBounds(boundsUnion, scale: scale)
-        else {
-            return []
-        }
-
-        let options = CGWindowImageOption(rawValue: request.optionRawValue)
-        let composite = Bridging.captureWindowsImage(
-            windowIDs: orderedIDs,
-            options: options
-        )
-        guard let composite else {
-            diagLog.debug("captureFrames: SkyLight returned nil for \(orderedIDs.count) windows")
-            return []
-        }
-        captureCount += 1
-
-        let expectedWidth = boundsUnion.width * scale
-        guard abs(CGFloat(composite.width) - expectedWidth) < 1 else {
-            diagLog.debug(
-                "captureFrames: width mismatch (expected \(expectedWidth), got \(composite.width))"
-            )
-            return []
-        }
-
-        if let encoded = MenuBarCaptureService.encodeBGRA(composite),
-           MenuBarCaptureService.isFullyTransparentBGRA(
-               pixels: encoded.pixels,
-               width: composite.width,
-               height: composite.height,
-               bytesPerRow: encoded.bytesPerRow
-           )
-        {
-            return []
-        }
-
-        var frames = [MenuBarCaptureService.Frame]()
-        var batchBytes = 0
-        for windowID in orderedIDs {
-            guard let bounds = storage[windowID] else { continue }
-            let cropRect = CGRect(
-                x: (bounds.origin.x - boundsUnion.origin.x) * scale,
-                y: (bounds.origin.y - boundsUnion.origin.y) * scale,
-                width: bounds.width * scale,
-                height: bounds.height * scale
-            )
-            guard let cropped = composite.cropping(to: cropRect),
-                  let encoded = MenuBarCaptureService.encodeBGRA(cropped)
-            else {
-                continue
+        MenuBarCaptureService.captureFrames(
+            request,
+            captureImage: { windowIDs, options in
+                let image = Bridging.captureWindowsImage(windowIDs: windowIDs, options: options)
+                if image != nil {
+                    self.captureCount += 1
+                }
+                return image
             }
-            batchBytes += encoded.pixels.count
-            guard batchBytes <= 16 * 1024 * 1024 else { break }
-            frames.append(
-                MenuBarCaptureService.Frame(
-                    windowID: windowID,
-                    width: cropped.width,
-                    height: cropped.height,
-                    bytesPerRow: encoded.bytesPerRow,
-                    scale: request.expectedScale,
-                    pixels: encoded.pixels
-                )
-            )
-        }
-        return frames
+        )
     }
 
     private func scheduleExit() {
