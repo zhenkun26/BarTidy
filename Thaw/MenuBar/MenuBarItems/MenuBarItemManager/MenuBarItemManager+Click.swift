@@ -57,7 +57,6 @@ extension MenuBarItemManager {
 
         let clickPoint = try await getCurrentBounds(for: item).center
 
-        let mouseLocation = try getMouseLocation()
         let source = try getEventSource()
 
         try permitLocalEvents()
@@ -85,19 +84,20 @@ extension MenuBarItemManager {
             throw EventError.eventCreationFailure(item)
         }
 
-        // Warp the cursor to the click point so the Window Server's hit-test
-        // matches the event coordinates rather than the cursor's current position.
+        // The session has already hidden the cursor and installed cleanup,
+        // including cancellation of this registration delay.
+        try CursorRestorationSession.checkForInterruption()
         MouseHelpers.warpCursor(to: clickPoint)
-        // Small delay to let the Window Server process the warp before posting
-        // the event. Without this, the event can be routed using the cursor's
-        // old position (e.g. the Apple menu) instead of the warped target.
         try await Task.sleep(for: .milliseconds(10))
-        MouseHelpers.hideCursor()
-        defer {
-            MouseHelpers.restoreCursorPosition(to: mouseLocation)
-            MouseHelpers.showCursor()
-        }
+        try CursorRestorationSession.checkForInterruption()
 
+        let releaseGuard = PressReleaseGuard(
+            deadline: .seconds(3),
+            events: .init(mouseUp: mouseUp, pid: getEventPID(for: item)),
+            item: item
+        )
+        releaseGuard.arm()
+        defer { releaseGuard.releaseBeforeRestoringCursor() }
         let eventStartTime = Date.now
         do {
             try await postEventWithBarrier(
@@ -112,6 +112,7 @@ extension MenuBarItemManager {
                 repeating: 2 // Double mouse up prevents invalid item state.
             )
 
+            releaseGuard.recordReleaseAttempt(delivered: true)
             // Update timeout cache with successful duration
             let successDuration = Duration.milliseconds(Date.now.timeIntervalSince(eventStartTime) * 1000)
             updateClickOperationTimeout(successDuration, for: item)
@@ -124,6 +125,7 @@ extension MenuBarItemManager {
                     timeout: timeout,
                     repeating: 2 // Double mouse up prevents invalid item state.
                 )
+                releaseGuard.recordReleaseAttempt(delivered: true)
             } catch {
                 // Catch this for logging purposes only. We want to propagate
                 // the original error.
@@ -279,10 +281,23 @@ extension MenuBarItemManager {
             }
         }
 
-        if !skipInputPause {
-            try await waitForUserToPauseInput()
+        return try await Self.performWithMoveGate(waitBeforeGate: {
+            if !skipInputPause {
+                try await self.waitForUserToPauseInput()
+            }
+        }) {
+            try await CursorRestorationSession.withSession {
+                try await self.clickUsingEvents(item: item, with: mouseButton, maxAttempts: maxAttempts)
+            }
         }
+    }
 
+    private func clickUsingEvents(
+        item: MenuBarItem,
+        with mouseButton: CGMouseButton,
+        maxAttempts: Int
+    ) async throws -> ClickReactionVerifier.Reaction {
+        guard let appState else { throw EventError.cannotComplete }
         MenuBarItemManager.diagLog.info(
             """
             Clicking \(item.logString) with \
@@ -306,6 +321,7 @@ extension MenuBarItemManager {
         }
         let attemptStartTime = Date.now
         for n in 1 ... maxAttempts {
+            try CursorRestorationSession.checkForInterruption()
             guard !Task.isCancelled else {
                 throw EventError.cannotComplete
             }
@@ -331,6 +347,10 @@ extension MenuBarItemManager {
                     )
                 }
                 return reaction
+            } catch is CursorRestorationSession.Interrupted {
+                throw CursorRestorationSession.Interrupted()
+            } catch is CancellationError {
+                throw CancellationError()
             } catch {
                 let attemptDuration = Date.now.timeIntervalSince(attemptStartTime)
                 MenuBarItemManager.diagLog.debug("Attempt \(n) failed after \(Int(attemptDuration * 1000))ms: \(error)")

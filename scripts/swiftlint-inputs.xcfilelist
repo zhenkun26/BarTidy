@@ -213,6 +213,7 @@ $(SRCROOT)/Thaw/Utilities/ApplicationTermination.swift
 $(SRCROOT)/Thaw/Utilities/ConcurrencyHelpers.swift
 $(SRCROOT)/Thaw/Utilities/ConflictingAppDetector.swift
 $(SRCROOT)/Thaw/Utilities/Constants.swift
+$(SRCROOT)/Thaw/Utilities/CursorRestorationSession.swift
 $(SRCROOT)/Thaw/Utilities/Defaults.swift
 $(SRCROOT)/Thaw/Utilities/DiagnosticRedactor.swift
 $(SRCROOT)/Thaw/Utilities/EnergyMode.swift

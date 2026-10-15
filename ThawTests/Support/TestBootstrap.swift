@@ -28,13 +28,12 @@ import Foundation
 final class TestBootstrap: NSObject {
     override init() {
         super.init()
-        let suiteName = "com.stonerl.ThawTests.processScratch"
+        let suiteName = "com.stonerl.ThawTests.processScratch.\(UUID().uuidString)"
         guard let suite = UserDefaults(suiteName: suiteName) else {
             return
         }
-        // Fresh domain every run; residue from a previous crashed or
-        // interrupted run must not leak into this one.
-        suite.removePersistentDomain(forName: suiteName)
+        // A fresh domain prevents stale-run contamination without deleting
+        // another run's preferences. Test artifacts remain available to inspect.
         Defaults.store = suite
     }
 }

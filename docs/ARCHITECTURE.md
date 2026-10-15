@@ -68,6 +68,18 @@ External dependencies are declared via Swift Package Manager and locked in
 - Permissions: guides the user through TCC prompts required for AX and screen capture features.
 - Updates: Sparkle client; feed URL and EdDSA public key live in `Thaw/Resources/Info.plist`.
 
+Synthetic item moves and clicks share the move gate so their cursor ownership
+cannot overlap. `CursorRestorationSession` observes physical pointer events
+independently of the temporarily paused hover manager, retaining the latest
+physical movement position across retries and nested recovery. Scroll and
+button input interrupt further synthetic work without replacing that position
+with a synthetic event's coordinates. Cleanup releases an unfinished press,
+restores the cursor, and balances visibility on success, failure, and
+cancellation. If the observer cannot start, the operation fails before moving
+the cursor. The observer and cursor effects are injectable for deterministic
+tests; actual WindowServer delivery and perceived cursor behavior still need
+manual verification.
+
 ### `MenuBarItemService` (XPC)
 
 A separate process (`com.stonerl.Thaw.MenuBarItemService`) isolates

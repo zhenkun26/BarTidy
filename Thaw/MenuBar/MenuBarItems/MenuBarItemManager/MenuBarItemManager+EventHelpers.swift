@@ -458,8 +458,12 @@ extension MenuBarItemManager {
     }
 
     /// Returns an event source for a menu bar item event operation.
+    ///
+    /// App-generated events belong to the login session. Posting them with
+    /// HID-system state also updates the hardware-input timestamps used by
+    /// cursor restoration, making our own drag look like a physical move.
     nonisolated func getEventSource(
-        with stateID: CGEventSourceStateID = .hidSystemState
+        with stateID: CGEventSourceStateID = .combinedSessionState
     ) throws -> CGEventSource {
         enum Context {
             static let cache = OSAllocatedUnfairLock(initialState: [CGEventSourceStateID: CGEventSource]())

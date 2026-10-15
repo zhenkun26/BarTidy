@@ -189,7 +189,7 @@ nonisolated enum MouseHelpers {
             // menu is tracking the cursor — the event updates the cursor
             // position in the Window Server even if warp is blocked.
             guard
-                let source = CGEventSource(stateID: .hidSystemState),
+                let source = CGEventSource(stateID: .combinedSessionState),
                 let event = CGEvent(
                     mouseEventSource: source,
                     mouseType: .mouseMoved,
@@ -310,7 +310,8 @@ nonisolated enum MouseHelpers {
     }
 
     /// Whether physical pointer input occurred after an operation took cursor
-    /// ownership. HID-system timestamps exclude Thaw's synthetic warps/events.
+    /// ownership. Synthetic events must use combined-session sources so they
+    /// do not contaminate the HID-system timestamps queried here.
     static func physicalPointerInputOccurred(
         since start: ContinuousClock.Instant,
         now: ContinuousClock.Instant = .now
