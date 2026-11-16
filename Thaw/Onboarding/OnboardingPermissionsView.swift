@@ -13,6 +13,7 @@ import SwiftUI
 ///
 /// One view serves both so the second encounter looks like the first.
 struct ThawPermissionsView: View {
+    @Environment(AppState.self) private var appState
     @Environment(AppPermissions.self) private var permissions
 
     var onContinue: () -> Void
@@ -66,6 +67,33 @@ struct ThawPermissionsView: View {
             .padding(.horizontal, 30)
 
             VStack(spacing: 12) {
+                if !allGranted {
+                    Text("Screen Recording is optional. Accessibility is required to continue.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Text("If access is already enabled, restart BarTidy. After rebuilding a local copy, remove the old BarTidy permission entry and authorize the current app again.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    HStack(spacing: 18) {
+                        Button("Check Again") {
+                            permissions.startAllChecks()
+                        }
+                        Button("Show Current App in Finder") {
+                            NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
+                        }
+                        Button("Restart BarTidy") {
+                            appState.restartSelf()
+                        }
+                    }
+                    .buttonStyle(.link)
+                    .font(.caption)
+                }
+
                 HStack(spacing: 12) {
                     if let onQuit {
                         Button {
@@ -80,6 +108,8 @@ struct ThawPermissionsView: View {
                     }
 
                     Button {
+                        permissions.refresh()
+                        guard requiredGranted else { return }
                         onContinue()
                     } label: {
                         Text(requiredGranted && !allGranted ? "Continue in Limited Mode" : "Continue")
@@ -98,9 +128,16 @@ struct ThawPermissionsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(VisualEffectBackground())
         .onAppear {
+            permissions.startAllChecks()
             withAnimation(.spring(duration: 0.6, bounce: 0.3)) {
                 appeared = true
             }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            permissions.startAllChecks()
+        }
+        .onDisappear {
+            permissions.stopAllChecks()
         }
     }
 }

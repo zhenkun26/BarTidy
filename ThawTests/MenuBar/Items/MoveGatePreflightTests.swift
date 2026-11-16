@@ -106,6 +106,40 @@ struct MoveGatePreflightTests {
         #expect(safetyPosts.withLock { $0 } == 0)
     }
 
+    @Test("An unfinished press is released before restoration and cannot fire again")
+    func unfinishedPressIsReleasedBeforeRestoration() {
+        let scheduled = OSAllocatedUnfairLock<ScheduledAction?>(initialState: nil)
+        let events = OSAllocatedUnfairLock(initialState: [String]())
+        let guardState = MenuBarItemManager.PressReleaseGuard(
+            deadline: .seconds(1),
+            item: item(windowID: 54, title: "Moved"),
+            scheduler: { _, action in scheduled.withLock { $0 = action } },
+            postSafetyRelease: { events.withLock { $0.append("release") } }
+        )
+        guardState.arm()
+        guardState.releaseBeforeRestoringCursor()
+        events.withLock { $0.append("restore") }
+        scheduled.withLock { $0 }?()
+        guardState.releaseBeforeRestoringCursor()
+        #expect(events.withLock { $0 } == ["release", "restore"])
+    }
+
+    @Test("Successful or unstarted presses need no extra cleanup release")
+    func cleanupDoesNotReleaseIdleOrConfirmedPresses() {
+        let posts = OSAllocatedUnfairLock(initialState: 0)
+        let guardState = MenuBarItemManager.PressReleaseGuard(
+            deadline: .seconds(1),
+            item: item(windowID: 55, title: "Moved"),
+            scheduler: { _, _ in },
+            postSafetyRelease: { posts.withLock { $0 += 1 } }
+        )
+        guardState.releaseBeforeRestoringCursor()
+        guardState.arm()
+        guardState.recordReleaseAttempt(delivered: true)
+        guardState.releaseBeforeRestoringCursor()
+        #expect(posts.withLock { $0 } == 0)
+    }
+
     @Test("Failed mouse-ups leave the safety release armed")
     func failedMouseUpsKeepSafetyReleaseArmed() {
         let scheduled = OSAllocatedUnfairLock<ScheduledAction?>(initialState: nil)

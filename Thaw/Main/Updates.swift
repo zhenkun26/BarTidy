@@ -15,6 +15,23 @@ import SwiftUI
 @MainActor
 @Observable
 final class UpdatesManager: NSObject {
+    /// Local builds have no update service. Only a deliberately configured
+    /// distribution build may create or start Sparkle through normal app paths.
+    let supportsUpdates = UpdatesManager.supportsUpdates(info: Bundle.main.infoDictionary ?? [:])
+
+    static nonisolated func supportsUpdates(info: [String: Any]) -> Bool {
+        guard info["BarTidyUpdatesEnabled"] as? Bool == true,
+              let feed = info["SUFeedURL"] as? String,
+              let url = URL(string: feed), url.scheme == "https", url.host != nil,
+              url.user == nil, url.password == nil,
+              let key = info["SUPublicEDKey"] as? String,
+              Data(base64Encoded: key)?.count == 32
+        else {
+            return false
+        }
+        return true
+    }
+
     /// A Boolean value that indicates whether the user can check for updates.
     var canCheckForUpdates = false
 
@@ -25,7 +42,7 @@ final class UpdatesManager: NSObject {
     private(set) weak var appState: AppState?
 
     /// Tracks whether the updater has been started.
-    private var hasStartedUpdater = false
+    private(set) var hasStartedUpdater = false
 
     /// Tracks whether the running check was started by the macOS
     /// compatibility alert.
@@ -75,6 +92,7 @@ final class UpdatesManager: NSObject {
             return Self.storedUpdateChannel()
         }
         set {
+            guard supportsUpdates else { return }
             withMutation(keyPath: \.updateChannel) {
                 Defaults.store.set(newValue.rawValue, forKey: "UpdateChannel")
                 // Keep the superseded flag in step so downgrading to a build
@@ -128,9 +146,11 @@ final class UpdatesManager: NSObject {
     var automaticallyChecksForUpdates: Bool {
         get {
             access(keyPath: \.automaticallyChecksForUpdates)
+            guard supportsUpdates else { return false }
             return updater.automaticallyChecksForUpdates
         }
         set {
+            guard supportsUpdates else { return }
             withMutation(keyPath: \.automaticallyChecksForUpdates) {
                 updater.automaticallyChecksForUpdates = newValue
                 if newValue {
@@ -144,9 +164,11 @@ final class UpdatesManager: NSObject {
     var automaticallyDownloadsUpdates: Bool {
         get {
             access(keyPath: \.automaticallyDownloadsUpdates)
+            guard supportsUpdates else { return false }
             return updater.automaticallyDownloadsUpdates
         }
         set {
+            guard supportsUpdates else { return }
             withMutation(keyPath: \.automaticallyDownloadsUpdates) {
                 updater.automaticallyDownloadsUpdates = newValue
                 if newValue {
@@ -159,6 +181,7 @@ final class UpdatesManager: NSObject {
     /// Performs the initial setup of the manager.
     func performSetup(with appState: AppState) {
         self.appState = appState
+        guard supportsUpdates else { return }
         _ = updaterController
         // A `SUFeedURL` user-defaults entry would otherwise take precedence
         // over Info.plist and silently redirect update checks; the delegate's
@@ -169,7 +192,7 @@ final class UpdatesManager: NSObject {
 
     /// Starts the updater if it hasn't been started yet.
     func startUpdaterIfNeeded() {
-        guard !hasStartedUpdater else {
+        guard supportsUpdates, !hasStartedUpdater else {
             return
         }
         hasStartedUpdater = true
@@ -198,6 +221,7 @@ final class UpdatesManager: NSObject {
 
     /// Checks for app updates.
     @objc func checkForUpdates() {
+        guard supportsUpdates else { return }
         #if DEBUG
             // Checking for updates hangs in debug mode.
             let alert = NSAlert()
@@ -224,6 +248,10 @@ final class UpdatesManager: NSObject {
     /// or the releases page, which is where the promise lands while the feed
     /// still carries no alpha item.
     func checkForAlphaUpdateAfterCompatibilityWarning() {
+        guard supportsUpdates else {
+            openURL(Constants.repositoryURL)
+            return
+        }
         beginCompatibilityCheck()
         #if DEBUG
             // Checking for updates hangs in debug mode, so the promise is

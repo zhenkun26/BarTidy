@@ -48,10 +48,10 @@ final class AppPermissions: PermissionsManaging {
     let diagLog = DiagLog(category: "Permissions")
 
     /// The permission for Accessibility features.
-    let accessibility = AccessibilityPermission()
+    let accessibility: Permission
 
     /// The permission for Screen Recording features.
-    let screenRecording = ScreenRecordingPermission()
+    let screenRecording: Permission
 
     /// The state of the app's granted permissions.
     private(set) var permissionsState: PermissionsState = .missing
@@ -67,13 +67,35 @@ final class AppPermissions: PermissionsManaging {
     }
 
     /// Creates a new permissions manager.
-    init() {
+    init(
+        accessibility: Permission = AccessibilityPermission(),
+        screenRecording: Permission = ScreenRecordingPermission()
+    ) {
+        self.accessibility = accessibility
+        self.screenRecording = screenRecording
         self.updatePermissionsState()
         for permission in allPermissions {
             permission.onChange = { [weak self] in
                 self?.updatePermissionsState()
             }
         }
+    }
+
+    /// Refreshes effective access when returning from System Settings or
+    /// retrying Continue. An enabled TCC switch can still refer to an old build.
+    func refresh() {
+        for permission in allPermissions {
+            permission.refresh()
+        }
+        updatePermissionsState()
+    }
+
+    /// Resumes checks when a permissions window is shown again after setup.
+    func startAllChecks() {
+        for permission in allPermissions {
+            permission.startCheck()
+        }
+        updatePermissionsState()
     }
 
     /// Updates the current permissions state.

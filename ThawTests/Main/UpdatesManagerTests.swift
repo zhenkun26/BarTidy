@@ -24,6 +24,12 @@ import Testing
 @MainActor
 @Suite("Compatibility update check", .serialized)
 struct UpdatesManagerTests {
+    @Test("The regression runner uses the isolated host and retains scratch data")
+    func isolatedTestHost() {
+        #expect(ThawMain.isRunningUnitTestHost)
+        #expect(ProcessInfo.processInfo.environment["BARTIDY_RETAIN_TEST_ARTIFACTS"] == "1")
+    }
+
     /// Collects the URLs the manager would have handed to the browser.
     private func manager(opened: @escaping @MainActor (URL) -> Void) -> UpdatesManager {
         let manager = UpdatesManager()
@@ -31,22 +37,62 @@ struct UpdatesManagerTests {
         return manager
     }
 
-    /// Read back through ``UpdatesManager/storedUpdateChannel(on:)`` rather
-    /// than `updateChannel`, whose getter withholds alpha from a system that
-    /// still has a shipping build to run. The alert only appears past that
-    /// line, but the machine running the tests need not be.
-    @Test("Accepting the alert subscribes to alpha")
-    func acceptingTheAlertSubscribesToAlpha() throws {
-        try withScratchDefaults { _ in
-            let manager = manager { _ in }
+    /// Even a stale compatibility action cannot subscribe a manual-update build.
+    @Test("A local build cannot subscribe to an unavailable update service")
+    func localBuildDoesNotSubscribeToAlpha() throws {
+        try withScratchDefaults { store in
+            var opened: [URL] = []
+            let manager = manager { opened.append($0) }
             manager.checkForAlphaUpdateAfterCompatibilityWarning()
-            let unsupported = OperatingSystemVersion(
-                majorVersion: MacOSCompatibilityWarning.firstUnsupportedMajorVersion,
-                minorVersion: 0,
-                patchVersion: 0
-            )
-            #expect(UpdatesManager.storedUpdateChannel(on: unsupported) == .alpha)
+            #expect(!manager.supportsUpdates)
+            #expect(store.string(forKey: "UpdateChannel") == nil)
+            #expect(opened == [Constants.repositoryURL])
         }
+    }
+
+    @Test("Local builds ignore stale update preferences and all update entry points")
+    func localBuildDisablesUpdates() throws {
+        try withScratchDefaults { store in
+            store.set(true, forKey: "SUEnableAutomaticChecks")
+            store.set(true, forKey: "SUAutomaticallyUpdate")
+            store.set("https://example.invalid/appcast.xml", forKey: "SUFeedURL")
+            let manager = UpdatesManager()
+            manager.startUpdaterIfNeeded()
+            manager.checkForUpdates()
+            manager.automaticallyChecksForUpdates = true
+            manager.automaticallyDownloadsUpdates = true
+            manager.updateChannel = .alpha
+            #expect(!manager.hasStartedUpdater)
+            #expect(!manager.canCheckForUpdates)
+            #expect(!manager.automaticallyChecksForUpdates)
+            #expect(!manager.automaticallyDownloadsUpdates)
+            #expect(!Defaults.bool(forKey: .hasSeenUpdateConsent))
+            #expect(store.string(forKey: "UpdateChannel") == nil)
+        }
+    }
+
+    @Test("An update service needs explicit opt-in, HTTPS, and an Ed25519 public key")
+    func updateConfiguration() {
+        let key = Data(repeating: 1, count: 32).base64EncodedString()
+        var info: [String: Any] = [
+            "BarTidyUpdatesEnabled": true,
+            "SUFeedURL": "https://example.invalid/appcast.xml",
+            "SUPublicEDKey": key,
+        ]
+        #expect(UpdatesManager.supportsUpdates(info: info))
+        info["BarTidyUpdatesEnabled"] = false
+        #expect(!UpdatesManager.supportsUpdates(info: info))
+        info["BarTidyUpdatesEnabled"] = true
+        for feed in ["", "http://example.invalid/feed", "https://user:password@example.invalid/feed"] {
+            info["SUFeedURL"] = feed
+            #expect(!UpdatesManager.supportsUpdates(info: info))
+        }
+        info["SUFeedURL"] = "https://example.invalid/appcast.xml"
+        for invalidKey in ["", "not-a-key", Data(repeating: 1, count: 31).base64EncodedString()] {
+            info["SUPublicEDKey"] = invalidKey
+            #expect(!UpdatesManager.supportsUpdates(info: info))
+        }
+        #expect(!UpdatesManager.supportsUpdates(info: [:]))
     }
 
     /// A feed with no alpha item is the state of the world until the rewrite

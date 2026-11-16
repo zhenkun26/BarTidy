@@ -618,6 +618,9 @@ nonisolated extension Bridging {
         screenBounds: CGRect? = nil,
         options: CGWindowImageOption = []
     ) -> CGImage? {
+        // Legacy capture APIs may show a system prompt as a side effect.
+        // Only explicit permission buttons may initiate authorization.
+        guard CGPreflightScreenCaptureAccess() else { return nil }
         guard let fn = SkyLightAPI.createImageFromArray else {
             diagLog.error("captureWindowsImage: SkyLight API not available (SLWindowListCreateImageFromArray not found)")
             return nil
@@ -766,8 +769,10 @@ nonisolated extension Bridging {
     static func captureWindowsImageSCK(
         windowIDs: [CGWindowID],
         screenBounds: CGRect? = nil,
-        options: CGWindowImageOption = []
+        options: CGWindowImageOption = [],
+        permissionCheck: () -> Bool = { CGPreflightScreenCaptureAccess() }
     ) async -> CGImage? {
+        guard permissionCheck() else { return nil }
         guard !windowIDs.isEmpty else {
             diagLog.warning("captureWindowsImageSCK: empty windowIDs")
             return nil
@@ -978,6 +983,9 @@ nonisolated extension Bridging {
     private static let shareableContentIncludingOffscreenCache = ShareableContentCache<ShareableContentSnapshot>()
 
     private static func fetchShareableContentIncludingOffscreenUncached() async throws -> ShareableContentSnapshot {
+        guard CGPreflightScreenCaptureAccess() else {
+            throw SCStreamError(.userDeclined)
+        }
         let content = try await SCShareableContent.excludingDesktopWindows(
             false,
             onScreenWindowsOnly: false

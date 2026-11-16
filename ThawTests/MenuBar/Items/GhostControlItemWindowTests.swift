@@ -14,9 +14,12 @@ import Testing
 @MainActor
 @Suite("GhostControlItemWindow")
 struct GhostControlItemWindowTests {
-    private let hiddenTitle = "Thaw.ControlItem.Hidden"
-    private let alwaysHiddenTitle = "Thaw.ControlItem.AlwaysHidden"
-    private let visibleTitle = "Thaw.ControlItem.Visible"
+    // Fixtures that stand in for BarTidy's own windows must carry the
+    // running app's identity, so derive titles and bundle IDs from the
+    // app's constants instead of restating them.
+    private let hiddenTitle = ControlItem.Identifier.hidden.rawValue
+    private let alwaysHiddenTitle = ControlItem.Identifier.alwaysHidden.rawValue
+    private let visibleTitle = ControlItem.Identifier.visible.rawValue
 
     private func item(tag: MenuBarItemTag, windowID: CGWindowID, title: String) -> MenuBarItem {
         MenuBarItem.fixture(tag: tag, windowID: windowID, title: title)
@@ -186,9 +189,9 @@ struct GhostControlItemWindowTests {
     /// window number that is none of ours.
     private var orphan: MenuBarItem {
         item(
-            tag: .appItem(bundleID: "com.stonerl.Thaw", title: "com.stonerl.Thaw"),
+            tag: .appItem(bundleID: Constants.bundleIdentifier, title: Constants.bundleIdentifier),
             windowID: 639,
-            title: "com.stonerl.Thaw"
+            title: Constants.bundleIdentifier
         )
     }
 
@@ -228,9 +231,9 @@ struct GhostControlItemWindowTests {
     @Test("A control item of ours with a degraded title is kept")
     func orphanDetectionKeepsADegradedControlItem() {
         let degraded = item(
-            tag: .appItem(bundleID: "com.stonerl.Thaw", title: "com.stonerl.Thaw"),
+            tag: .appItem(bundleID: Constants.bundleIdentifier, title: Constants.bundleIdentifier),
             windowID: 16233,
-            title: "com.stonerl.Thaw"
+            title: Constants.bundleIdentifier
         )
         let items = [
             degraded,

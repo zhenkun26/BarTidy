@@ -1,5 +1,39 @@
 # Release and update distribution
 
+## BarTidy local builds
+
+BarTidy currently ships as a manually built, ad-hoc-signed application. There is
+no BarTidy appcast, signing key, notarized installer, or automated release.
+`BarTidyUpdatesEnabled` is explicitly false in `Thaw/Resources/Info.plist`;
+`SUFeedURL` and `SUPublicEDKey` are absent. Application entry points do not start
+Sparkle or ask for update consent in this configuration, even if old preferences
+enable update checks. Settings links to this repository for manual updates.
+
+For a local Release build with the same toolchain as BarTidy CI:
+
+```sh
+xcodebuild build -project Thaw.xcodeproj -scheme Thaw -configuration Release \
+  -destination 'platform=macOS' -derivedDataPath "$PWD/build/release" \
+  -onlyUsePackageVersionsFromResolvedFile \
+  CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
+```
+
+The product is `build/release/Build/Products/Release/BarTidy.app`. Inspect the
+build result before manually installing it; rebuilding can invalidate macOS
+permission grants. Neither the build nor CI installs the product. The Debug-only
+isolated test host is not compiled into Release.
+
+Enabling a future update service requires an explicit opt-in flag, an HTTPS
+appcast, and a valid Ed25519 public key in the bundled configuration. It also
+requires a separately reviewed BarTidy signing/notarization and publication
+process. The old Thaw `release.yml` and `build-dmg.yml` remain upstream-only and
+must not be enabled by replacing repository names globally.
+
+## Upstream Thaw reference
+
+The remaining sections document the inherited Thaw distribution system, not
+an operational BarTidy release pipeline or a promise of available preview builds.
+
 How Thaw ships installers vs in-app updates.
 
 ## Who hosts what

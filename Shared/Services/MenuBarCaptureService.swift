@@ -16,6 +16,8 @@ import Foundation
 /// exists so that leak can be reclaimed by exiting the helper. Visible-section
 /// icons stay on ScreenCaptureKit in the app; Always Hidden stays at 1 fps.
 nonisolated enum MenuBarCaptureService {
+    private static let diagLog = DiagLog(category: "MenuBarCaptureService")
+
     static let name = "com.stonerl.Thaw.MenuBarCaptureService"
 
     /// Exit after this many successful SkyLight composites.
@@ -80,6 +82,107 @@ nonisolated extension MenuBarCaptureService {
 }
 
 nonisolated extension MenuBarCaptureService {
+    /// Teamless local builds use the already-authorized application process.
+    /// A fresh legacy-capture XPC process can show another privacy alert on
+    /// each hover even while ScreenCaptureKit recognizes the app's grant.
+    static func usesCaptureHelper(teamIdentifier: String?) -> Bool {
+        teamIdentifier != nil
+    }
+
+    /// Shared geometry and frame validation for the local and XPC backends.
+    /// Authorization is checked before window enumeration or capture.
+    static func captureFrames(
+        _ request: CaptureBatchRequest,
+        permissionCheck: () -> Bool = { CGPreflightScreenCaptureAccess() },
+        allowedWindows: () -> Set<CGWindowID> = {
+            Set(Bridging.getMenuBarWindowList(option: .itemsOnly))
+        },
+        windowBounds: (CGWindowID) -> CGRect? = { Bridging.getWindowBounds(for: $0) },
+        captureImage: ([CGWindowID], CGWindowImageOption) -> CGImage? = {
+            Bridging.captureWindowsImage(windowIDs: $0, options: $1)
+        }
+    ) -> [Frame] {
+        guard permissionCheck() else { return [] }
+        let scale = CGFloat(request.expectedScale)
+        guard scale > 0, scale.isFinite else { return [] }
+
+        let allowed = allowedWindows()
+        let windowIDs = validatedWindowIDs(request.windowIDs, allowed: allowed)
+        guard !windowIDs.isEmpty else { return [] }
+
+        var storage = [CGWindowID: CGRect]()
+        var orderedIDs = [CGWindowID]()
+        var boundsUnion = CGRect.null
+        for windowID in windowIDs {
+            guard let bounds = windowBounds(windowID) else { continue }
+            guard Bridging.isValidCaptureBounds(bounds, scale: scale) else { continue }
+            storage[windowID] = bounds
+            orderedIDs.append(windowID)
+            boundsUnion = boundsUnion.union(bounds)
+        }
+        guard !orderedIDs.isEmpty,
+              Bridging.isValidCaptureBounds(boundsUnion, scale: scale)
+        else {
+            return []
+        }
+
+        let options = CGWindowImageOption(rawValue: request.optionRawValue)
+        let composite = captureImage(orderedIDs, options)
+        guard let composite else {
+            diagLog.debug("captureFrames: SkyLight returned nil for \(orderedIDs.count) windows")
+            return []
+        }
+
+        let expectedWidth = boundsUnion.width * scale
+        guard abs(CGFloat(composite.width) - expectedWidth) < 1 else {
+            diagLog.debug(
+                "captureFrames: width mismatch (expected \(expectedWidth), got \(composite.width))"
+            )
+            return []
+        }
+
+        if let encoded = encodeBGRA(composite),
+           isFullyTransparentBGRA(
+               pixels: encoded.pixels,
+               width: composite.width,
+               height: composite.height,
+               bytesPerRow: encoded.bytesPerRow
+           )
+        {
+            return []
+        }
+
+        var frames = [Frame]()
+        var batchBytes = 0
+        for windowID in orderedIDs {
+            guard let bounds = storage[windowID] else { continue }
+            let cropRect = CGRect(
+                x: (bounds.origin.x - boundsUnion.origin.x) * scale,
+                y: (bounds.origin.y - boundsUnion.origin.y) * scale,
+                width: bounds.width * scale,
+                height: bounds.height * scale
+            )
+            guard let cropped = composite.cropping(to: cropRect),
+                  let encoded = encodeBGRA(cropped)
+            else {
+                continue
+            }
+            batchBytes += encoded.pixels.count
+            guard batchBytes <= 16 * 1024 * 1024 else { break }
+            frames.append(
+                Frame(
+                    windowID: windowID,
+                    width: cropped.width,
+                    height: cropped.height,
+                    bytesPerRow: encoded.bytesPerRow,
+                    scale: request.expectedScale,
+                    pixels: encoded.pixels
+                )
+            )
+        }
+        return frames
+    }
+
     /// Drops zeros, duplicates, non-members, and anything past ``maxWindowCount``.
     static func validatedWindowIDs(
         _ ids: [CGWindowID],

@@ -68,6 +68,18 @@ External dependencies are declared via Swift Package Manager and locked in
 - Permissions: guides the user through TCC prompts required for AX and screen capture features.
 - Updates: Sparkle client; feed URL and EdDSA public key live in `Thaw/Resources/Info.plist`.
 
+Synthetic item moves and clicks share the move gate so their cursor ownership
+cannot overlap. `CursorRestorationSession` observes physical pointer events
+independently of the temporarily paused hover manager, retaining the latest
+physical movement position across retries and nested recovery. Scroll and
+button input interrupt further synthetic work without replacing that position
+with a synthetic event's coordinates. Cleanup releases an unfinished press,
+restores the cursor, and balances visibility on success, failure, and
+cancellation. If the observer cannot start, the operation fails before moving
+the cursor. The observer and cursor effects are injectable for deterministic
+tests; actual WindowServer delivery and perceived cursor behavior still need
+manual verification.
+
 ### `MenuBarItemService` (XPC)
 
 A separate process (`com.stonerl.Thaw.MenuBarItemService`) isolates
@@ -98,6 +110,15 @@ stay on ScreenCaptureKit in the app. Always Hidden is capped at 1 fps;
 Hidden follows the icon refresh slider. This dictionary leak is in the
 capture caller (commit `0e045faf`); it is separate from the Core Animation
 fence-port leak tracked as issue #933.
+
+BarTidy's teamless local builds use the same validated capture/crop code in
+the already-authorized application process. A newly launched legacy-capture
+helper can produce another privacy alert each time the tray opens under
+ad-hoc signing. Local builds therefore skip helper startup, logging sync, and
+recycling; certificate-signed builds retain the XPC path. All background
+capture checks effective authorization without prompting. The local fallback
+retains SkyLight's per-call leak until the app quits; its growth has not been
+measured for BarTidy.
 
 ### External interfaces
 

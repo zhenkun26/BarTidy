@@ -1341,7 +1341,7 @@ extension HIDEventManager {
         let clickPoint = CGPoint(x: frame.midX, y: frame.midY)
         let pid = frontApp.processIdentifier
 
-        guard let source = CGEventSource(stateID: .hidSystemState) else { return true }
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return true }
         let mouseDown = CGEvent(
             mouseEventSource: source,
             mouseType: .leftMouseDown,

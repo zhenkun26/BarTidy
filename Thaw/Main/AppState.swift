@@ -146,7 +146,7 @@ final class AppState {
         Task {
             await MenuBarCaptureService.Connection.shared.start()
         }
-        diagLog.debug("setupTask: MenuBarCaptureService XPC start kicked off")
+        diagLog.debug("setupTask: optional offscreen capture backend start kicked off")
 
         appearanceManager.performSetup(with: self)
         hidEventManager.performSetup(with: self)
@@ -293,7 +293,7 @@ final class AppState {
                 if isPresented {
                     self.openWindows.insert(.settings)
                     // Start Sparkle consent flow the first time settings is shown.
-                    if !Defaults.bool(forKey: .hasSeenUpdateConsent) {
+                    if self.updatesManager.supportsUpdates, !Defaults.bool(forKey: .hasSeenUpdateConsent) {
                         self.isUpdateConsentPresented = true
                     } else {
                         self.updatesManager.startUpdaterIfNeeded()

@@ -1,6 +1,66 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Check Again" : {
+      "comment" : "Recheck effective macOS permissions without requesting new access.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新检查"
+          }
+        }
+      }
+    },
+    "Show Current App in Finder" : {
+      "comment" : "Locate the exact running app when recovering a stale local-build TCC grant.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在访达中显示当前应用"
+          }
+        }
+      }
+    },
+    "Restart BarTidy" : {
+      "comment" : "Restart the same app bundle after changing macOS permissions.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重启 BarTidy"
+          }
+        }
+      }
+    },
+    "Screen Recording is optional. Accessibility is required to continue." : {
+      "comment" : "Explain the required and optional onboarding permissions.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕录制为可选权限；继续使用需要辅助功能权限。"
+          }
+        }
+      }
+    },
+    "If access is already enabled, restart BarTidy. After rebuilding a local copy, remove the old BarTidy permission entry and authorize the current app again." : {
+      "comment" : "Recovery guidance for process caching and ad-hoc code identity changes.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果权限开关已开启，请重启 BarTidy。本机构建更新后，请移除旧的 BarTidy 授权条目，再为当前应用重新授权。"
+          }
+        }
+      }
+    },
     "(no script selected)" : {
       "comment" : "A placeholder displayed in the \"Path\" column of a hook row when no script is selected.",
       "localizations" : {

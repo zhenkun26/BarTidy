@@ -1548,8 +1548,8 @@ final class MenuBarItemImageCache: @unchecked Sendable {
         await applyRefreshedImages(newImages)
     }
 
-    /// Offscreen items go through the recyclable SkyLight helper so the
-    /// per-call dictionary leak stays out of the UI process.
+    /// Offscreen items use SkyLight in the recyclable helper for signed builds
+    /// or in the authorized application process for teamless local builds.
     private nonisolated func refreshImagesFromCaptureService(
         items: [MenuBarItem],
         scale: CGFloat
@@ -1579,7 +1579,7 @@ final class MenuBarItemImageCache: @unchecked Sendable {
     }
 
     /// Captures a fresh batch for image-comparison triggers through the
-    /// recyclable helper process. Selection stays on the main actor; capture
+    /// offscreen capture backend. Selection stays on the main actor; capture
     /// and frame-to-image copies run on the concurrent executor.
     func captureCurrentImages(
         forItemIdentifiers identifiers: Set<String>

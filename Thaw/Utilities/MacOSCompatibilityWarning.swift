@@ -26,8 +26,8 @@ enum MacOSCompatibilityWarning {
     nonisolated enum Action: Equatable {
         /// Subscribe to the alpha channel and check for the build it carries.
         case subscribeToAlpha
-        /// Open the releases page so the user can pick a build by hand.
-        case openReleasesPage
+        /// Local builds have no published update channel.
+        case openRepository
     }
 
     /// The alert an unsupported system is owed: what it says, and what its
@@ -43,7 +43,7 @@ enum MacOSCompatibilityWarning {
     /// alert is due.
     ///
     /// The alpha offer needs somewhere to send the subscription, so
-    /// `canSubscribe` reports whether an updates manager reached the call.
+    /// `canSubscribe` reports whether a configured updates manager reached the call.
     /// Alpha availability is checked against the running system rather than
     /// assumed: the alert must not offer a channel it cannot select. Both
     /// readings come from ``firstUnsupportedMajorVersion``, so the offer
@@ -69,11 +69,11 @@ enum MacOSCompatibilityWarning {
                 title: title,
                 message: String(
                     localized: """
-                    This version of Thaw is not yet compatible with macOS \(release). Preview builds are available on GitHub Releases, and support will be delivered through the alpha update channel.
+                    This build of \(Constants.displayName) does not support macOS \(release). It is updated manually. Check the project repository for compatibility information before installing another build.
                     """
                 ),
-                confirmButtonTitle: String(localized: "View Preview Builds"),
-                action: .openReleasesPage
+                confirmButtonTitle: String(localized: "View Project"),
+                action: .openRepository
             )
         }
 
@@ -93,7 +93,7 @@ enum MacOSCompatibilityWarning {
     @MainActor
     static func showIfNeeded(updatesManager: UpdatesManager?) {
         let version = ProcessInfo.processInfo.operatingSystemVersion
-        guard let prompt = prompt(for: version, canSubscribe: updatesManager != nil) else {
+        guard let prompt = prompt(for: version, canSubscribe: updatesManager?.supportsUpdates == true) else {
             return
         }
 
@@ -111,8 +111,8 @@ enum MacOSCompatibilityWarning {
         switch prompt.action {
         case .subscribeToAlpha:
             updatesManager?.checkForAlphaUpdateAfterCompatibilityWarning()
-        case .openReleasesPage:
-            NSWorkspace.shared.open(Constants.releasesURL)
+        case .openRepository:
+            NSWorkspace.shared.open(Constants.repositoryURL)
         }
     }
 }

@@ -114,7 +114,7 @@ struct ControlItemSectionGateTests {
     func fieldCycleIsRefused() throws {
         let log = """
         2026-09-02 19:49:59.161 [DEBUG] [MenuBarItemManager] applyProfileLayout: current visible section has 1 items: ["leits.MeetingBar:Item-0"]
-        2026-09-02 19:49:59.161 [DEBUG] [MenuBarItemManager] applyProfileLayout: current hidden section has 19 items: ["com.steipete.codexbar:codexbar-codex", "com.steipete.codexbar:codexbar-claude", "com.tunabellysoftware.tgpro:Item-0", "eu.exelban.Stats:CPU_bar_chart", "eu.exelban.Stats:GPU_bar_chart", "eu.exelban.Stats:RAM_bar_chart", "com.rogueamoeba.soundsource:SSMainAppMenuIcon", "com.rogueamoeba.soundsource:Input", "com.apphousekitchen.aldente-pro:Item-0", "org.p0deje.Maccy:Item-0", "com.apple.TextInputMenuAgent:Item-0", "com.stonerl.Thaw:Thaw.ControlItem.Visible", "com.nektony.App-Cleaner-SIII-UIHelper:Item-0", "com.apple.KerberosMenuExtra:Item-0", "com.apple.controlcenter:Battery", "com.electron.dockerdesktop:Item-0", "com.proxyman.NSProxy:Item-0", "com.paloaltonetworks.GlobalProtect.client:Item-0", "com.kaspersky.kav_agent:Item-0"]
+        2026-09-02 19:49:59.161 [DEBUG] [MenuBarItemManager] applyProfileLayout: current hidden section has 19 items: ["com.steipete.codexbar:codexbar-codex", "com.steipete.codexbar:codexbar-claude", "com.tunabellysoftware.tgpro:Item-0", "eu.exelban.Stats:CPU_bar_chart", "eu.exelban.Stats:GPU_bar_chart", "eu.exelban.Stats:RAM_bar_chart", "com.rogueamoeba.soundsource:SSMainAppMenuIcon", "com.rogueamoeba.soundsource:Input", "com.apphousekitchen.aldente-pro:Item-0", "org.p0deje.Maccy:Item-0", "com.apple.TextInputMenuAgent:Item-0", "\(MenuBarItemTag.visibleControlItem.tagIdentifier)", "com.nektony.App-Cleaner-SIII-UIHelper:Item-0", "com.apple.KerberosMenuExtra:Item-0", "com.apple.controlcenter:Battery", "com.electron.dockerdesktop:Item-0", "com.proxyman.NSProxy:Item-0", "com.paloaltonetworks.GlobalProtect.client:Item-0", "com.kaspersky.kav_agent:Item-0"]
         2026-09-02 19:49:59.161 [DEBUG] [MenuBarItemManager] applyProfileLayout: current always-hidden section has 6 items: ["com.apple.controlcenter:com.stonerl.Thaw", "com.steipete.codexbar:codexbar-opencode", "com.steipete.codexbar:codexbar-cursor", "com.shortcutlabs.FlicMac:Item-0", "ru.yandex.desktop.disk2:Item-0", "com.nextcloud.desktopclient:Item-0"]
         """
         let parsed = ProfileLayoutLogReplay.parse(log)
@@ -149,9 +149,9 @@ struct ControlItemSectionGateTests {
     @Test("A settled field cycle passes")
     func settledCyclePasses() throws {
         let log = """
-        2026-06-11 11:31:05.750 [DEBUG] [MenuBarItemManager] applyProfileLayout: current visible section has 3 items: ["leits.MeetingBar:Item-0", "com.stonerl.Thaw:Thaw.ControlItem.Visible", "com.apple.controlcenter:Clock"]
-        2026-06-11 11:31:05.750 [DEBUG] [MenuBarItemManager] applyProfileLayout: current hidden section has 2 items: ["com.proxyman.NSProxy:Item-0", "com.stonerl.Thaw:Thaw.ControlItem.Hidden"]
-        2026-06-11 11:31:05.751 [DEBUG] [MenuBarItemManager] applyProfileLayout: current always-hidden section has 2 items: ["com.shortcutlabs.FlicMac:Item-0", "com.stonerl.Thaw:Thaw.ControlItem.AlwaysHidden"]
+        2026-06-11 11:31:05.750 [DEBUG] [MenuBarItemManager] applyProfileLayout: current visible section has 3 items: ["leits.MeetingBar:Item-0", "\(MenuBarItemTag.visibleControlItem.tagIdentifier)", "com.apple.controlcenter:Clock"]
+        2026-06-11 11:31:05.750 [DEBUG] [MenuBarItemManager] applyProfileLayout: current hidden section has 2 items: ["com.proxyman.NSProxy:Item-0", "\(MenuBarItemTag.hiddenControlItem.tagIdentifier)"]
+        2026-06-11 11:31:05.751 [DEBUG] [MenuBarItemManager] applyProfileLayout: current always-hidden section has 2 items: ["com.shortcutlabs.FlicMac:Item-0", "\(MenuBarItemTag.alwaysHiddenControlItem.tagIdentifier)"]
         """
         let parsed = ProfileLayoutLogReplay.parse(log)
         let cycle = try #require(parsed.cycles.first)

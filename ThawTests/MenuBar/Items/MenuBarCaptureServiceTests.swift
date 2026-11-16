@@ -13,6 +13,75 @@ import Testing
 
 @Suite("Menu bar capture service")
 struct MenuBarCaptureServiceTests {
+    @Test("Teamless capture stays in the application while signed builds retain the helper")
+    func localBuildBackend() {
+        #expect(!MenuBarCaptureService.usesCaptureHelper(teamIdentifier: nil))
+        #expect(MenuBarCaptureService.usesCaptureHelper(teamIdentifier: "FIXTURE_TEAM"))
+    }
+
+    @Test("Denied offscreen capture never enumerates windows or calls a capture API")
+    func deniedCaptureHasNoSideEffects() {
+        var enumerationCount = 0
+        var captureCount = 0
+        for _ in 0 ..< 5 {
+            let frames = MenuBarCaptureService.captureFrames(
+                .init(requestID: 1, windowIDs: [12], optionRawValue: 0, expectedScale: 2),
+                permissionCheck: { false },
+                allowedWindows: { enumerationCount += 1; return [12] },
+                windowBounds: { _ in Issue.record("Denied capture must not query bounds"); return nil },
+                captureImage: { _, _ in captureCount += 1; return nil }
+            )
+            #expect(frames.isEmpty)
+        }
+        #expect(enumerationCount == 0)
+        #expect(captureCount == 0)
+    }
+
+    @Test("Shared capture crops offscreen frames and preserves the requested scale")
+    func offscreenFrameGeometry() throws {
+        let composite = try makeOpaqueImage(width: 8, height: 4)
+        let frames = MenuBarCaptureService.captureFrames(
+            .init(requestID: 1, windowIDs: [12, 34, 12, 99], optionRawValue: 0, expectedScale: 2),
+            permissionCheck: { true },
+            allowedWindows: { [12, 34] },
+            windowBounds: { id in
+                CGRect(x: id == 12 ? -100 : -98, y: 0, width: 2, height: 2)
+            },
+            captureImage: { ids, _ in
+                #expect(ids == [12, 34])
+                return composite
+            }
+        )
+        #expect(frames.map(\.windowID) == [12, 34])
+        for frame in frames {
+            #expect(frame.width == 4)
+            #expect(frame.height == 4)
+            #expect(frame.scale == 2)
+            #expect(MenuBarCaptureService.makeImage(from: frame) != nil)
+        }
+    }
+
+    @Test("A composite at the wrong scale is rejected by both capture backends")
+    func rejectsWrongCompositeScale() throws {
+        let composite = try makeOpaqueImage(width: 4, height: 2)
+        let frames = MenuBarCaptureService.captureFrames(
+            .init(requestID: 1, windowIDs: [12], optionRawValue: 0, expectedScale: 2),
+            permissionCheck: { true },
+            allowedWindows: { [12] },
+            windowBounds: { _ in CGRect(x: -100, y: 0, width: 4, height: 2) },
+            captureImage: { _, _ in composite }
+        )
+        #expect(frames.isEmpty)
+    }
+
+    @Test("ScreenCaptureKit background capture returns without requesting denied access")
+    func deniedSCKCapture() async {
+        #expect(await Bridging.captureWindowsImageSCK(
+            windowIDs: [12],
+            permissionCheck: { false }
+        ) == nil)
+    }
+
     @Test("The service name is the reverse-DNS Mach service identifier")
     func serviceName() {
         #expect(MenuBarCaptureService.name == "com.stonerl.Thaw.MenuBarCaptureService")

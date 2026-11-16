@@ -14,6 +14,70 @@ import Testing
 /// Regression tests for the synthetic event coordinates used to move menu bar items.
 @Suite("Move event coordinates")
 struct MoveEventCoordinatesTests {
+    /// Construct the actual parked-item events without posting them. Their
+    /// source must not impersonate hardware input and veto cursor restoration
+    /// after the offscreen release clamps the system pointer to a screen edge.
+    @MainActor
+    @Test("Synthetic move events keep hardware-input state separate", arguments: [
+        MenuBarItemEventType.MoveSubtype.mouseDown, .mouseDragged, .mouseUp,
+    ])
+    func syntheticMoveUsesSessionState(subtype: MenuBarItemEventType.MoveSubtype) throws {
+        let manager = MenuBarItemManager()
+        let source = try manager.getEventSource()
+        let point = CGPoint(x: -4261, y: 16.5)
+        let item = MenuBarItem.fixture(
+            tag: .appItem(bundleID: "com.example.cursor", title: "Parked"),
+            windowID: 100,
+            bounds: CGRect(x: point.x, y: 0, width: 22, height: 33),
+            isOnScreen: false
+        )
+        let type = MenuBarItemEventType.move(subtype)
+        let event = try #require(CGEvent.menuBarItemEvent(item: item, source: source, type: type, location: point))
+
+        #expect(event.getIntegerValueField(.eventSourceStateID) == Int64(CGEventSourceStateID.combinedSessionState.rawValue))
+        #expect(event.location == point)
+        #expect(event.type == type.cgEventType)
+        #expect(event.flags == type.cgEventFlags)
+        #expect(event.getIntegerValueField(.windowID) == Int64(item.windowID))
+    }
+
+    @MainActor
+    @Test("Synthetic clicks use session state without inheriting drag modifiers")
+    func syntheticClickUsesSessionState() throws {
+        let manager = MenuBarItemManager()
+        let source = try manager.getEventSource()
+        let item = MenuBarItem.fixture(
+            tag: .appItem(bundleID: "com.example.cursor", title: "Visible"),
+            windowID: 101
+        )
+        let point = CGPoint(x: 900, y: 16.5)
+        let subtypes: [MenuBarItemEventType.ClickSubtype] = [
+            .leftMouseDown, .leftMouseUp, .rightMouseDown, .rightMouseUp, .otherMouseDown, .otherMouseUp,
+        ]
+        for subtype in subtypes {
+            let type = MenuBarItemEventType.click(subtype)
+            let event = try #require(CGEvent.menuBarItemEvent(item: item, source: source, type: type, location: point))
+            #expect(event.getIntegerValueField(.eventSourceStateID) == Int64(CGEventSourceStateID.combinedSessionState.rawValue))
+            #expect(event.location == point)
+            #expect(event.type == type.cgEventType)
+            #expect(event.flags.isEmpty)
+            #expect(event.getIntegerValueField(.mouseEventClickState) == subtype.clickState)
+        }
+    }
+
+    @MainActor
+    @Test("Local input remains permitted on the source used by synthetic moves")
+    func syntheticMoveSourcePermitsLocalInput() throws {
+        let manager = MenuBarItemManager()
+        let source = try manager.getEventSource()
+        try manager.permitLocalEvents()
+
+        #expect(source.localEventsSuppressionInterval == 0)
+        for state in [CGEventSuppressionState.eventSuppressionStateRemoteMouseDrag, .eventSuppressionStateSuppressionInterval] {
+            #expect(source.getLocalEventsFilterDuringSuppressionState(state) == .permitAllEvents)
+        }
+    }
+
     /// The target point is used unchanged for both halves of a teleport. In
     /// particular, an off-screen press must stay off-screen rather than being
     /// rewritten to a visible notch midpoint, which would flash the real item

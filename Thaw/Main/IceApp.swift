@@ -17,13 +17,35 @@ import SwiftUI
 /// already too late to decline to run.
 @main
 enum ThawMain {
+    #if DEBUG
+        private(set) static var isRunningUnitTestHost = false
+    #endif
+
     static func main() {
+        #if DEBUG
+            // The unit-test host must never construct AppDelegate/AppState,
+            // register menu bar items, migrate preferences, or request TCC access.
+            // This variable is set only by the scheme's Test action.
+            if ProcessInfo.processInfo.environment["BARTIDY_UNIT_TEST_HOST"] == "1" {
+                isRunningUnitTestHost = true
+                UnitTestHostApp.main()
+                return
+            }
+        #endif
         guard !LayoutResetCommand.runIfRequested() else {
             return
         }
         IceApp.main()
     }
 }
+
+#if DEBUG
+    private struct UnitTestHostApp: App {
+        var body: some Scene {
+            Settings { EmptyView() }
+        }
+    }
+#endif
 
 struct IceApp: App {
     @NSApplicationDelegateAdaptor var appDelegate: AppDelegate

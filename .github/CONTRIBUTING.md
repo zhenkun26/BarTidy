@@ -1,5 +1,25 @@
 # Contributing to Thaw
 
+## BarTidy maintenance scope
+
+This repository is a personal derivative. BarTidy changes target
+`zhenkun26/BarTidy:development`; the upstream contribution process below applies
+when submitting to Thaw itself. Preserve the fork's visible-by-default behavior,
+icon-hover tray, disabled overflow, app identity, and manual-update policy.
+
+Run `bash scripts/test-bartidy.sh /absolute/path/to/derived-data` for the scoped
+regression checks and consult [the release notes](../docs/RELEASES.md#bartidy-local-builds)
+for local builds. The inherited full suite includes destructive filesystem
+fixtures; do not run it on a personal machine under a no-deletion constraint.
+The separate **BarTidy CI** workflow is the fork's validation entry point;
+upstream-only skipped checks are not evidence of a passing build.
+
+Keep upstream merges and dependency upgrades separate from maintenance fixes.
+Publish a feature branch only with authorization, then review its PR before
+integration. Do not force-push or rewrite published history.
+
+## Upstream contribution guide
+
 All contributions welcome. Propose changes to this document in a pull request.
 
 ## Code of Conduct

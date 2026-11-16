@@ -581,16 +581,15 @@ extension MenuBarItemManager {
 
     /// Performs admission work before acquiring the app-wide move gate.
     /// Nested recovery moves already own the gate and enter directly.
-    static func performWithMoveGate(
+    static func performWithMoveGate<Result>(
         timeout: Duration = moveGateTimeout,
         timeoutProvider: (@MainActor () throws -> Duration)? = nil,
         waitBeforeGate: @MainActor () async throws -> Void = {},
         didFinishWhileHoldingGate: (@MainActor () -> Void)? = nil,
-        operation: @MainActor () async throws -> Void
-    ) async throws {
+        operation: @MainActor () async throws -> Result
+    ) async throws -> Result {
         if holdsMoveGate {
-            try await operation()
-            return
+            return try await operation()
         }
 
         try await waitBeforeGate()
@@ -603,7 +602,7 @@ extension MenuBarItemManager {
                 }
             )
         }
-        try await $holdsMoveGate.withValue(true) {
+        return try await $holdsMoveGate.withValue(true) {
             try await operation()
         }
     }
@@ -1229,6 +1228,7 @@ extension MenuBarItemManager {
         // mouseDown; irrelevant offscreen.
         let warpPoint = initialEventLocations.press
         let warpIsOnScreen = initialGeometry.target == .selectedDisplay
+        try CursorRestorationSession.checkForInterruption()
         if warpIsOnScreen {
             // Load-bearing for event delivery — keep unconditionally, even
             // during a bulk apply: the receiving app's tracking needs the
@@ -1322,6 +1322,7 @@ extension MenuBarItemManager {
                 ? CGPoint(x: itemBounds.midX, y: itemBounds.midY)
                 : nil
         )
+        try CursorRestorationSession.checkForInterruption()
         if warpIsOnScreen, eventLocations.press != warpPoint {
             MouseHelpers.warpCursor(to: eventLocations.press)
         }
@@ -1361,7 +1362,9 @@ extension MenuBarItemManager {
 
         // From here the press may be down; a deadline guard posts a matching
         // release even if the async attempt stops making progress.
+        try CursorRestorationSession.checkForInterruption()
         releaseGuard.arm()
+        defer { releaseGuard.releaseBeforeRestoringCursor() }
         do {
             if let dragPlan {
                 itemOrigin = try await postFaithfulDragSteps(
@@ -1552,6 +1555,7 @@ extension MenuBarItemManager {
                 }
                 event = liveEvent
             }
+            try CursorRestorationSession.checkForInterruption()
             try await budget.run(maximum: timeout) { allowance in
                 try await scrombleEvent(event, item: liveItem, timeout: allowance)
             }
@@ -1877,18 +1881,26 @@ extension MenuBarItemManager {
             let postSafetyRelease = postSafetyRelease
             scheduler(deadline) {
                 let fires = status.withLock { status -> Bool in
-                    guard status.state == .armed else {
-                        return false
-                    }
+                    guard status.state == .armed else { return false }
                     status.state = .fired
+                    postSafetyRelease()
                     return true
                 }
-                guard fires else {
-                    return
+                if fires {
+                    MenuBarItemManager.diagLog.warning(
+                        "Press on \(item.logString) outlived its \(milliseconds) ms deadline; releasing it"
+                    )
                 }
-                MenuBarItemManager.diagLog.warning(
-                    "Press on \(item.logString) outlived its \(milliseconds) ms deadline; releasing it"
-                )
+            }
+        }
+
+        /// Finish an unacknowledged press before the caller restores the cursor.
+        /// Posting under the lock also joins an already-firing watchdog, so it
+        /// cannot enqueue another release after this method returns.
+        func releaseBeforeRestoringCursor() {
+            status.withLock { status in
+                guard status.state == .armed else { return }
+                status.state = .fired
                 postSafetyRelease()
             }
         }
@@ -2298,52 +2310,41 @@ extension MenuBarItemManager {
             return
         }
 
-        // Capture the original cursor position once so the cursor is warped
-        // back to it a single time after all attempts, rather than after each
-        // individual attempt (which caused the cursor to oscillate many times
-        // during a layout reset when items required multiple attempts).
-        let mouseLocation = options.hideCursorAcrossAttempts ? try getMouseLocation() : nil
-        let cursorOwnershipStartedAt = ContinuousClock.now
-        // The default 1 s cursor-hide watchdog is too short for menu
-        // bar item moves, and the budget they can burn has grown: every
-        // attempt spends its whole timeout four times over (two event
-        // posts, two response waits), budgets escalate to the merged
-        // ceiling of one second per operation, and a failed attempt posts
-        // one more fallback at a fixed 100 ms. At the ceiling that is
-        // roughly 32 s for eight attempts — far past the old flat 10 s,
-        // whose comment still assumed "8 × ~500 ms". When the watchdog
-        // fires partway through, the cursor is force-shown at the
-        // synthetic event's last cursorPosition (mid-display, per the
-        // offscreen-target override below in postMoveEvents) and the user
-        // sees a brief cursor flash. The floor stays at 10 s so ordinary
-        // moves keep their safety net against genuinely stuck states.
-        if options.hideCursorAcrossAttempts {
-            let cursorWatchdog = try min(
-                options.watchdogTimeout ?? Self.cursorHideWatchdogTimeout(
-                    maxAttempts: max(1, options.maxMoveAttempts)
-                ),
+        // A nested recovery shares the same position and physical-input history.
+        // Keep the observer and restoration alive through every retry/release.
+        do {
+            let watchdogTimeout = try min(
+                options.watchdogTimeout ?? Self.cursorHideWatchdogTimeout(maxAttempts: max(1, options.maxMoveAttempts)),
                 budget.remaining()
             )
-            MouseHelpers.hideCursor(watchdogTimeout: cursorWatchdog)
-        }
-        defer {
-            if let mouseLocation {
-                let physicalInputOccurred = MouseHelpers.physicalPointerInputOccurred(
-                    since: cursorOwnershipStartedAt
+            try await CursorRestorationSession.withSession(
+                watchdogTimeout: watchdogTimeout,
+                hideCursor: options.hideCursorAcrossAttempts
+            ) {
+                try await performMoveAttempts(
+                    item: item,
+                    destination: destination,
+                    on: resolvedDisplayID,
+                    endpoints: bufferedEndpoints,
+                    options: options,
+                    budget: budget
                 )
-                if MouseHelpers.shouldRestoreSavedCursorPosition(
-                    physicalPointerInputOccurred: physicalInputOccurred
-                ) {
-                    MouseHelpers.restoreCursorPosition(to: mouseLocation)
-                } else {
-                    MenuBarItemManager.diagLog.debug(
-                        "move: preserving physical pointer movement made during the transaction"
-                    )
-                }
-                MouseHelpers.showCursor()
             }
+        } catch is CursorRestorationSession.Interrupted {
+            // Include interruption between attempts or on entry to nested
+            // recovery, so callers treat user input as a deferral, not failure.
+            throw EventError.moveSuperseded(item)
         }
+    }
 
+    private func performMoveAttempts(
+        item: MenuBarItem,
+        destination: MoveDestination,
+        on resolvedDisplayID: CGDirectDisplayID,
+        endpoints bufferedEndpoints: CurrentMoveEndpoints,
+        options: MoveOptions,
+        budget: MoveTransactionBudget
+    ) async throws {
         var policyState = MovePolicy.State(plannedTargetMinX: bufferedEndpoints.target.bounds.minX)
         let configuration = MovePolicy.Configuration(
             maxAttempts: max(1, options.maxMoveAttempts),
@@ -2355,6 +2356,7 @@ extension MenuBarItemManager {
         var stopReason: MovePolicy.StopReason?
 
         attemptLoop: while stopReason == nil {
+            try CursorRestorationSession.checkForInterruption()
             let n = policyState.attempts + 1
             guard !Task.isCancelled else {
                 MenuBarItemManager.diagLog.debug("move: cancelled before attempt \(n) for \(item.logString)")
@@ -2422,6 +2424,10 @@ extension MenuBarItemManager {
                         revertedToStart: outcome.revertedToStart,
                         targetMinX: settledEndpoints.target.bounds.minX
                     )
+            } catch is CursorRestorationSession.Interrupted {
+                throw EventError.moveSuperseded(item)
+            } catch is CancellationError {
+                throw CancellationError()
             } catch is MoveDeadlineExceeded {
                 lastError = EventError.moveTimedOut(item)
                 observation = .failed(.overran)
