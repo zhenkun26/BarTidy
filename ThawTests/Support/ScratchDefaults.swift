@@ -65,7 +65,8 @@ private actor ScratchDefaultsMutex {
 private let scratchDefaultsMutex = ScratchDefaultsMutex()
 
 /// Points ``Defaults`` at a throwaway suite for the duration of `body`, then
-/// restores the previous store and deletes the suite.
+/// restores the previous store. BARTIDY_RETAIN_TEST_ARTIFACTS=1 preserves
+/// scratch domains for inspection; other runners clean up as before.
 ///
 /// Anything that persists a setting -- `ProfileManager.applySnapshot`,
 /// `MenuBarItem.customName`, `MigrationManager`, `HookScript.saveGlobal` --
@@ -102,7 +103,9 @@ func withScratchDefaults<Result>(
     Defaults.store = suite
     defer {
         Defaults.store = previous
-        suite.removePersistentDomain(forName: suiteName)
+        if ProcessInfo.processInfo.environment["BARTIDY_RETAIN_TEST_ARTIFACTS"] != "1" {
+            suite.removePersistentDomain(forName: suiteName)
+        }
         scratchDefaultsLock.unlock()
     }
     return try body(suite)
@@ -138,7 +141,9 @@ func withScratchDefaults<Result>(
         // task is spawned, so the next acquirer can only ever see the
         // restored store.
         Defaults.store = previous
-        suite.removePersistentDomain(forName: suiteName)
+        if ProcessInfo.processInfo.environment["BARTIDY_RETAIN_TEST_ARTIFACTS"] != "1" {
+            suite.removePersistentDomain(forName: suiteName)
+        }
         Task { await scratchDefaultsMutex.release() }
     }
     return try await body(suite)

@@ -121,8 +121,13 @@ struct SimpleModeSettingsPane: View {
                 Text("\(Constants.displayName) \(Constants.versionString)")
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Check for Updates") {
-                    updatesManager.checkForUpdates()
+                if updatesManager.supportsUpdates {
+                    Button("Check for Updates") {
+                        updatesManager.checkForUpdates()
+                    }
+                    .disabled(!updatesManager.canCheckForUpdates)
+                } else {
+                    Link("Manual Updates", destination: Constants.repositoryURL)
                 }
             }
         }

@@ -2322,8 +2322,12 @@ extension MenuBarItemManager {
                 hideCursor: options.hideCursorAcrossAttempts
             ) {
                 try await performMoveAttempts(
-                    item: item, destination: destination, on: resolvedDisplayID,
-                    endpoints: bufferedEndpoints, options: options, budget: budget
+                    item: item,
+                    destination: destination,
+                    on: resolvedDisplayID,
+                    endpoints: bufferedEndpoints,
+                    options: options,
+                    budget: budget
                 )
             }
         } catch is CursorRestorationSession.Interrupted {

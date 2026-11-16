@@ -293,7 +293,7 @@ final class AppState {
                 if isPresented {
                     self.openWindows.insert(.settings)
                     // Start Sparkle consent flow the first time settings is shown.
-                    if !Defaults.bool(forKey: .hasSeenUpdateConsent) {
+                    if self.updatesManager.supportsUpdates, !Defaults.bool(forKey: .hasSeenUpdateConsent) {
                         self.isUpdateConsentPresented = true
                     } else {
                         self.updatesManager.startUpdaterIfNeeded()

@@ -27,13 +27,14 @@ struct MacOSCompatibilityWarningTests {
         #expect(MacOSCompatibilityWarning.prompt(for: version(majorVersion), canSubscribe: true) == nil)
     }
 
-    /// The offer needs an updates manager to carry it out. Without one the
-    /// user is still told, and still given somewhere to go.
-    @Test("Without a manager the prompt sends the user to the releases page")
-    func noManagerOffersPreviewBuilds() throws {
+    /// No update service means no promise of downloadable preview builds.
+    @Test("Without an update service the prompt offers manual compatibility information")
+    func noServiceOffersProjectInformation() throws {
         let prompt = try #require(MacOSCompatibilityWarning.prompt(for: version(27), canSubscribe: false))
-        #expect(prompt.action == .openReleasesPage)
-        #expect(prompt.confirmButtonTitle == String(localized: "View Preview Builds"))
+        #expect(prompt.action == .openRepository)
+        #expect(prompt.confirmButtonTitle == String(localized: "View Project"))
+        #expect(!prompt.message.contains("alpha"))
+        #expect(prompt.message.contains(Constants.displayName))
     }
 
     @Test("With a manager the prompt offers the alpha channel")

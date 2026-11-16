@@ -26,8 +26,12 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES"
+      shouldUseLaunchSchemeArgsEnv = "NO"
       codeCoverageEnabled = "YES">
+      <EnvironmentVariables>
+         <EnvironmentVariable key="BARTIDY_UNIT_TEST_HOST" value="1" isEnabled="YES"/>
+         <EnvironmentVariable key="BARTIDY_RETAIN_TEST_ARTIFACTS" value="1" isEnabled="YES"/>
+      </EnvironmentVariables>
       <Testables>
          <TestableReference
             skipped = "NO"

@@ -281,15 +281,18 @@ extension MenuBarItemManager {
             }
         }
 
-        return try await Self.performWithMoveGate(waitBeforeGate: {
-            if !skipInputPause {
-                try await self.waitForUserToPauseInput()
+        return try await Self.performWithMoveGate(
+            waitBeforeGate: {
+                if !skipInputPause {
+                    try await self.waitForUserToPauseInput()
+                }
+            },
+            operation: {
+                try await CursorRestorationSession.withSession {
+                    try await self.clickUsingEvents(item: item, with: mouseButton, maxAttempts: maxAttempts)
+                }
             }
-        }) {
-            try await CursorRestorationSession.withSession {
-                try await self.clickUsingEvents(item: item, with: mouseButton, maxAttempts: maxAttempts)
-            }
-        }
+        )
     }
 
     private func clickUsingEvents(

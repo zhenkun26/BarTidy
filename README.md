@@ -4,7 +4,7 @@ A personal [Thaw](https://github.com/thaw-app/Thaw) fork for macOS menu bar stor
 
 Items you do not stash stay in the menu bar. Hover the BarTidy icon to expand the tray; move away to collapse it.
 
-This is a self-use project. Upstream Thaw changes may be merged over time. Issues and PRs are unlikely to be handled here — file them on [Thaw](https://github.com/thaw-app/Thaw/issues) instead.
+This is a self-use project with no support or release schedule. Report BarTidy-specific behavior in [this repository](https://github.com/zhenkun26/BarTidy/issues). Report a problem to [Thaw](https://github.com/thaw-app/Thaw/issues) only after reproducing it in official Thaw. Upstream changes are reviewed in separate increments.
 
 Requires macOS 26+. Quit official Thaw before running BarTidy.
 
@@ -13,7 +13,7 @@ Requires macOS 26+. Quit official Thaw before running BarTidy.
 - New extras stay **Visible**. Only items you drag into Hidden are stored.
 - Notch overflow is **off**, so unstored items are not auto-ejected.
 - Hover the **BarTidy icon** (not empty menu bar space) to show the tray; leaving the icon and tray hides it after the hover delay (~0.2s).
-- App identity is `BarTidy` / `dev.zhenkun.BarTidy`, with Thaw’s Sparkle feed disabled.
+- App identity is `BarTidy` / `dev.zhenkun.BarTidy`. Local builds use manual updates; Sparkle startup, update consent, and update controls are disabled.
 - Teamless local builds capture Hidden icons in the authorized app process, avoiding a fresh legacy-capture helper and its privacy alert each time the tray opens. Certificate-signed builds retain Thaw's recyclable helper.
 
 Layout engine, search, hotkeys, profiles, triggers, and appearance are unchanged. The Swift module and source tree remain `Thaw` so upstream diffs stay readable.
@@ -27,8 +27,23 @@ Layout engine, search, hotkeys, profiles, triggers, and appearance are unchanged
 5. Hover the BarTidy icon to open the tray.
 
 ```sh
-xcodebuild -scheme Thaw -configuration Debug -destination 'platform=macOS' build
+xcodebuild build -project Thaw.xcodeproj -scheme Thaw -configuration Debug \
+  -destination 'platform=macOS' -derivedDataPath "$PWD/build/local" \
+  -onlyUsePackageVersionsFromResolvedFile \
+  CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=
 ```
+
+The product is `build/local/Build/Products/Debug/BarTidy.app`. Build first, then quit the installed copy before replacing it manually. No updater downloads or installs another app. See [build and update distribution](docs/RELEASES.md#bartidy-local-builds) for the boundary between local builds and upstream release automation.
+
+## Validation
+
+Use Xcode 26.6 and macOS 26 for the current CI baseline. The **BarTidy CI** workflow runs SwiftLint, builds the app and test bundle, runs six focused regression suites, and builds Release with ad-hoc signing. It does not publish or notarize an app. Inherited Thaw workflows retain their upstream-only gates.
+
+```sh
+bash scripts/test-bartidy.sh "$PWD/build/validation"
+```
+
+The scheme's Debug test host does not start the menu bar application. The selected suites inject permission/cursor/capture behavior and keep scratch preferences and result bundles for inspection. The full inherited test suite includes filesystem deletion tests and is not run by this script. These checks do not replace interactive permission, multiple-display, sleep/wake, or long-running memory validation.
 
 ### Recovering permissions after a local rebuild
 

@@ -1,5 +1,10 @@
 # Thaw security assurance case
 
+> Upstream reference: the release signatures, notarization, update distribution,
+> badges, and support commitments below describe Thaw. They have not been
+> established for BarTidy. BarTidy uses manual local builds with its updater
+> disabled; see [BarTidy local builds](RELEASES.md#bartidy-local-builds).
+
 This document argues that Thaw’s [security requirements](../.github/SECURITY.md)
 are met for its intended environment: a **local macOS menu bar utility** used by
 a single interactive user on their own Mac.

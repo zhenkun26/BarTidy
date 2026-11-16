@@ -13,7 +13,7 @@ import Synchronization
 /// Owns cursor restoration across a complete synthetic operation, including
 /// retries and nested recovery. The observer survives HIDEventManager.stopAll().
 @MainActor
-final class CursorRestorationSession: Sendable {
+final class CursorRestorationSession {
     struct Interrupted: Error {}
     struct MonitoringUnavailable: Error {}
 

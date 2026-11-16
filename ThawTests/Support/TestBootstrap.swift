@@ -21,9 +21,9 @@ import Foundation
 /// per-key snapshot/restore to be safe, though existing ones stay
 /// correct.
 ///
-/// The app host has already launched and read its state from the real
-/// domain by the time the test bundle loads; only reads and writes made
-/// from test code are redirected.
+/// The scheme's isolated test host does not construct AppState. This redirects
+/// preferences before any test constructs application objects. Launching a
+/// custom host without BARTIDY_UNIT_TEST_HOST=1 does not provide that guarantee.
 @objc(TestBootstrap)
 final class TestBootstrap: NSObject {
     override init() {

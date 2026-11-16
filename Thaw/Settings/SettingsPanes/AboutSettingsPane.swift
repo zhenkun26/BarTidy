@@ -33,10 +33,16 @@ struct AboutSettingsPane: View {
                     .padding(.vertical, 8)
             }
             IceSection("Updates") {
-                automaticallyCheckForUpdates
-                automaticallyDownloadUpdates
-                updateChannel
-                checkForUpdates
+                if updatesManager.supportsUpdates {
+                    automaticallyCheckForUpdates
+                    automaticallyDownloadUpdates
+                    updateChannel
+                    checkForUpdates
+                } else {
+                    Text("This local build is updated manually. Build and install a newer copy from the BarTidy repository.")
+                        .foregroundStyle(.secondary)
+                    Link("Open BarTidy Repository", destination: Constants.repositoryURL)
+                }
             }
         }
         .onChange(of: colorScheme, initial: true) {

@@ -22,6 +22,8 @@
 	<string>BarTidy uses your location while its settings are open to identify the current Wi-Fi network and configure location-based menu bar item triggers.</string>
 	<key>SUEnableAutomaticChecks</key>
 	<false/>
+	<key>BarTidyUpdatesEnabled</key>
+	<false/>
 	<key>ThawDonateURL</key>
 	<string>https://github.com/sponsors/stonerl</string>
 	<key>ThawMenuBarItemSpacingExecutableURI</key>
